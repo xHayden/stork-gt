@@ -19,7 +19,7 @@ export default function NavBar() {
                     <a>Store</a>
                 </div>
             </div>
-            <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-1 md:gap-6 flex-col md:flex-row`}>
+            <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row`}>
                 <a>Mapbox</a>
                 <a>Rankings</a>
             </div>
