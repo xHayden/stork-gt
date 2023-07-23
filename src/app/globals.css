@@ -2,26 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+@import url('https://fonts.googleapis.com/css2?family=Angkor&display=swap');
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html {
+  @apply min-h-screen;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  @apply m-0 w-screen bg-teal-500;
+  color: black;
+}
+
+button {
+  @apply bg-white p-2 border-b-4 border-black;
+}
+
+main {
+  @apply px-4 md:px-6 py-4;
+}
+
+nav {
+  @apply bg-white;
+}
+
+.stretch {
+  display:inline-block;
+  -webkit-transform:scale(1,2); /* Safari and Chrome */
+  -moz-transform:scale(1,2); /* Firefox */
+  -ms-transform:scale(1,2); /* IE 9 */
+  -o-transform:scale(1,2); /* Opera */
+  transform:scale(1,2); /* W3C */
 }

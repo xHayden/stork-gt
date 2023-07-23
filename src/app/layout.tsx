@@ -1,8 +1,9 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Angkor, Chonburi, Rubik_Mono_One } from 'next/font/google'
+import NavBar from "../components/NavBar";
 
-const inter = Inter({ subsets: ['latin'] })
+const angkor = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -15,8 +16,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className=''>
+      <body className={`${angkor.className} flex-col flex min-h-screen`}>
+        <div className='flex w-full justify-end md:justify-normal'>
+          <NavBar/>
+        </div>
+      {children}
+      </body>
     </html>
   )
 }
