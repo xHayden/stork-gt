@@ -4,7 +4,7 @@ export interface User {
     name: string
     email: string
     dues: number
-    purchases?: Item[]
+    purchases?: Item[] | []
     role: string
     admin: boolean
     paidDues?(): boolean
@@ -23,8 +23,8 @@ export interface Item {
 
 export interface Team {
     captain: ObjectId
-    storks: [ObjectId]
-    members: [ObjectId]
+    storks: ObjectId[]
+    members: ObjectId[]
     name: string
 }
 
@@ -38,8 +38,12 @@ export interface Stork {
     atId?: ObjectId
     atContentURL?: string
     trackType?: TrackType
-    locations: [TimestampPosition]
+    locations: TimestampPosition[]
     lastLocation?: TimestampPosition
+}
+
+export interface DBStork extends Stork {
+    _id: ObjectId
 }
 
 export interface Position {
@@ -57,8 +61,4 @@ export interface Timestamp {
 
 export interface TimestampPosition extends Position, Timestamp {
     
-}
-
-export interface DBStork extends Stork {
-    _id: ObjectId
 }

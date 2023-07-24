@@ -17,7 +17,7 @@ const createStork = async (stork: Stork) => {
 
 export async function POST(req: NextRequest) {
     if (!req.body) {
-        throw new Error("Body missing from request for /user/create");
+        throw new Error("Body missing from request for /stork/create");
     }
     let data = await req.json();
     let res;
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
             trackType: data.trackType,
         });
     } catch (e) {
-        throw new Error("Could not create user: " + e);
+        throw new Error("Could not create stork: " + e);
     }
     return NextResponse.json(res);
 }

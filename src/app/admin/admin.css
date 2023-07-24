@@ -24,7 +24,7 @@ main {
 }
 
 nav {
-  @apply bg-white text-zinc-900 border-zinc-400;
+  @apply bg-white text-zinc-900 border-teal-400;
 }
 
 nav div a, nav div div a {

@@ -19,7 +19,7 @@ const getTeamById = async (id: ObjectId): Promise<DBTeam> => {
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');
     const collection: Collection<DBTeam> = db.collection('teams');
-    const filter = { _id: ObjectId };
+    const filter = { _id: id };
     const doc: DBTeam | null = await collection.findOne(filter);
     if (!doc) {
         return Promise.reject("Team not found");

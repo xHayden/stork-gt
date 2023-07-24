@@ -1,9 +1,9 @@
 import './admin.css'
 import type { Metadata } from 'next'
 import NavBar from "../components/NavBar";
-import { Montserrat } from 'next/font/google'
+import { Space_Mono } from 'next/font/google'
 
-const angkor = Montserrat({ weight: "400", subsets: ["latin"] });
+const angkor = Space_Mono({ weight: "400", subsets: ["latin"] });
 
 
 export const metadata: Metadata = {
