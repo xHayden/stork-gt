@@ -1,4 +1,4 @@
-import Disclaimer from '@/components/Disclaimer'
+import Disclaimer from '@/app/components/Disclaimer'
 import Image from 'next/image'
 
 export default function Home() {

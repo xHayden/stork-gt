@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Angkor&display=swap');
-
 html {
   @apply min-h-screen;
 }
@@ -22,7 +20,7 @@ main {
 }
 
 nav {
-  @apply bg-white;
+  @apply bg-white border-black;
 }
 
 .stretch {

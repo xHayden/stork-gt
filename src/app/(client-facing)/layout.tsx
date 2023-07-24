@@ -1,7 +1,6 @@
+import NavBar from '../components/NavBar'
+import '../globals.css'
 import type { Metadata } from 'next'
-import { Rubik_Mono_One } from 'next/font/google'
-
-const angkor = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Stork Race @ GT',
@@ -13,11 +12,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <html lang="en" className=''>
-      <body className={`${angkor.className} flex-col flex min-h-screen`}>
-        {children}
-      </body>
-    </html>
-  )
+  return (<>
+    <div className='flex w-full justify-end md:justify-normal'>
+      <NavBar/>
+    </div>
+    {children}
+  </>)
 }
