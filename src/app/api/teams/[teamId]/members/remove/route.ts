@@ -1,9 +1,11 @@
 import { DBTeam } from '@/app/types';
-import client from '../../../../../lib/mongodb';
+import client from '../../../../../../lib/mongodb';
 import { NextRequest, NextResponse } from 'next/server';
 import { Db, Collection, ObjectId } from 'mongodb';
+import { FailedToUpdateError, MissingRequestBodyError, MissingRequestParametersError, ObjectNotFoundError } from '@/app/types/errors';
 
 const removeTeamMemberById = async (
+  route: string,
   teamId: ObjectId,
   userId: ObjectId
 ): Promise<DBTeam> => {
@@ -14,36 +16,39 @@ const removeTeamMemberById = async (
   const doc: DBTeam | null = await collection.findOne(filter);
 
   if (!doc) {
-    return Promise.reject('Team not found');
+    throw new ObjectNotFoundError(route, DBTeam);
   }
   
-  const memberIndex = doc.members.findIndex((memberId: ObjectId) =>
-    memberId.equals(userId)
-  );
-  if (memberIndex !== -1) {
-    doc.members.splice(memberIndex, 1);
-    await collection.updateOne(filter, { $set: { members: doc.members } });
+  try {
+    const memberIndex = doc.members.findIndex((memberId: ObjectId) =>
+      memberId.equals(userId)
+    );
+    if (memberIndex !== -1) {
+      doc.members.splice(memberIndex, 1);
+      await collection.updateOne(filter, { $set: { members: doc.members } });
+    }
+    return doc;
+  } catch (e) {
+    throw new FailedToUpdateError(route, DBTeam);
   }
-  return doc;
 };
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { teamId: ObjectId } }
 ) {
+  const route = "api/teams/${params.teamId}/members/remove";
   if (!req.body) {
-    throw new Error(
-      `Body missing from request for api/teams/${params.teamId}/members/remove`
-    );
+    throw new MissingRequestBodyError(route);
   }
-
   let data = await req.json();
-  let res;
-  try {
-    res = await removeTeamMemberById(params.teamId, data.id);
-  } catch (e) {
-    throw new Error('Could not remove member: ' + e);
+  if (!data.id) {
+    throw new MissingRequestParametersError(route, ["id"]);
   }
-
-  return NextResponse.json(res);
+  try {
+    const res = await removeTeamMemberById(route, params.teamId, data.id);
+    return NextResponse.json(res);
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 400 })
+  }
 }

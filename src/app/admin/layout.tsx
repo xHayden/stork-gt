@@ -1,9 +1,9 @@
 import './admin.css'
 import type { Metadata } from 'next'
 import NavBar from "../components/NavBar";
-import { Space_Mono } from 'next/font/google'
+import { Roboto } from 'next/font/google'
 
-const angkor = Space_Mono({ weight: "400", subsets: ["latin"] });
+const angkor = Roboto({ weight: "400", subsets: ["latin"] });
 
 
 export const metadata: Metadata = {

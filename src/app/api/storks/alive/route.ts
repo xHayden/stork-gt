@@ -1,9 +1,10 @@
 import { DBStork } from '@/app/types';
-import client from '../../../lib/mongodb'
+import client from '../../../../lib/mongodb'
 import { NextRequest, NextResponse } from "next/server";
 import { Db, Collection } from 'mongodb';
+import { ObjectNotFoundError } from '@/app/types/errors';
 
-const getStorksAlive = async (): Promise<DBStork[]> => {
+const getStorksAlive = async (route: string): Promise<DBStork[]> => {
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');
     const collection: Collection<DBStork> = db.collection('storks');
@@ -11,19 +12,28 @@ const getStorksAlive = async (): Promise<DBStork[]> => {
     const cursor = collection.find(filter);
     const docs: DBStork[] = await cursor.toArray();
     if (docs.length === 0) {
-        throw new Error("Storks not found");
+        throw new ObjectNotFoundError(route, DBStork);
     }
     return docs;
 }
 
+/**
+ * @swagger
+ * /api/storks/alive:
+ *   get:
+ *     description: Returns all alive storks
+ *     responses:
+ *       200:
+ *         description: Alive storks
+ */
 export async function GET(
     request: NextRequest
 ) {
+  const route = "/api/storks/alive"
     try {
-      const storks = await getStorksAlive();
+      const storks = await getStorksAlive(route);
       return NextResponse.json(storks);
-    } catch (error) {
-      console.error(error);
-      return NextResponse.json({ error }, { status: 400 });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 400 })
     }
 }

@@ -1,9 +1,10 @@
-import { DBTeam, DBUser } from '@/app/types';
-import client from '../../../../../lib/mongodb';
+import { DBTeam, DBUser, DatabaseObject } from '@/app/types';
+import client from '../../../../../../lib/mongodb';
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId, Db, Collection } from 'mongodb';
+import { ObjectNotFoundError } from '@/app/types/errors';
 
-const getTeamMembersById = async (teamId: ObjectId): Promise<DBUser[]> => {
+const getTeamMembersById = async (route: string, teamId: ObjectId): Promise<DBUser[]> => {
   const dbClient = await client;
   const db: Db = dbClient.db('stork-gt');
   const collection: Collection<DBTeam> = db.collection('teams');
@@ -11,26 +12,28 @@ const getTeamMembersById = async (teamId: ObjectId): Promise<DBUser[]> => {
   const doc: DBTeam | null = await collection.findOne(filter);
 
   if (!doc) {
-    throw new Error('Team not found');
+    throw new ObjectNotFoundError(route, DBTeam);
   }
-
-  const memberIds = doc.members;
-  const membersCollection: Collection<DBUser> = db.collection('users');
-  const memberFilter = { _id: { $in: memberIds } };
-  const members: DBUser[] = await membersCollection.find(memberFilter).toArray();
-
-  return members;
+  try {
+    const memberIds = doc.members;
+    const membersCollection: Collection<DBUser> = db.collection('users');
+    const memberFilter = { _id: { $in: memberIds } };
+    const members: DBUser[] = await membersCollection.find(memberFilter).toArray();
+    return members;
+  } catch (e) {
+    throw new ObjectNotFoundError(route, DBUser);
+  }
 };
 
 export async function GET(
     request: NextRequest,
     { params }: { params: { teamId: ObjectId } }
 ) {
+    const route = "api/teams/${params.teamId}/members/get";
     try {
-      const members = await getTeamMembersById(params.teamId);
+      const members = await getTeamMembersById(route, params.teamId);
       return NextResponse.json(members);
-    } catch (error) {
-      console.error(error);
-      return NextResponse.json({ error: "Team not found" }, { status: 404 });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 400 })
     }
 }
