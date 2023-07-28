@@ -37,4 +37,6 @@ next-env.d.ts
 .env
 filtered_animals.txt
 
-dist/
+# dist/
+
+# .vscode
