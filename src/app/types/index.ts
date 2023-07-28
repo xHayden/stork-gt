@@ -42,6 +42,7 @@ export interface IDBUser extends IUser, IDatabaseObject {
 }
 
 export class DBUser extends User implements IDBUser, IDatabaseObject {
+    static typeName = "DBUser";
     _id: ObjectId
     constructor(_id: ObjectId, user: IUser) {
         super(user);
@@ -150,4 +151,31 @@ export interface Timestamp {
 
 export interface TimestampPosition extends Position, Timestamp {
     
+}
+
+interface ComboboxProps {
+    elements: any[]
+}
+
+export interface APINameComboboxProps extends ComboboxProps {
+    elements: APIForm[]
+    setSelected: any
+    selected: APIForm | undefined
+    visible: APIForm[]
+    setVisible: any
+}
+
+export interface APIFormField {
+    name: string
+    type: string
+    placeholder: string
+}
+
+export interface APIForm {
+    name: string
+    requestUrl: string
+    requestMethod: string
+    buttonText: string
+    description?: string
+    fields?: APIFormField[]
 }

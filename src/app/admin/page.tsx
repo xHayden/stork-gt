@@ -1,158 +1,160 @@
 'use client'
-import { useEffect, useState } from 'react';
-import { User } from "../types";
-import { toast, Toaster } from 'react-hot-toast';
+import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { Rubik_Mono_One, Roboto } from 'next/font/google'
+import APIForm from './APIForm';
+import APINameCombobox from './APISearchCombobox';
 
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
 
-const APIForm = ({ requestUrl, requestMethod, fields, buttonText }: any) => {
-    const [response, setResponse] = useState("");
-    const [formData, setFormData] = useState<{[key: string]: string}>({});
-
-    useEffect(() => {
-        setFormData(fields?.reduce((acc: any, field: any) => ({ ...acc, [field.name]: "" }), {}));
-    }, [fields]);
-
-
-    const handleChange = (e: any, field: any) => {
-        setFormData({ ...formData, [field.name]: e.target.value });
-    }
-
-    const handleRequest = async () => {
-        let newRequestURL = requestUrl;
-        if (fields && newRequestURL.includes("{")) {
-            // Use regular expression to find text between curly braces
-            let regex = /\{(\w+)\}/g;
-            let match;
-        
-            // Find each instance of a variable in the URL
-            while (match = regex.exec(requestUrl)) {
-                // Replace the found variable with the value from the fields object
-                let variable = match[1];
-                let fieldObject = fields.find((field: any) => field.name === variable);
-                if (fieldObject && formData.hasOwnProperty(variable)) {
-                    newRequestURL = newRequestURL.replace("{" + variable + "}", formData[variable]);
-                }
-            }
-        }
-        if (fields) {
-            if(Object.values(formData).some(value => value === "")) {
-                toast.error("All fields are required");
-                return;
-            }
-        }
-        let request;
-        if (requestMethod == "GET") {
-            request = fetch(newRequestURL, {
-                method: requestMethod,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-        } else {
-            request = fetch(newRequestURL, {
-                method: requestMethod,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-        }
-        const response = await request;
-        const data = await response.text();
-        setResponse(data);
-        if(response.ok) {
-          toast.success("Request successfully completed!");
-        } else {
-          toast.error("Request failed: " + data);
-        }
-    }
-
-    return (
-        <div className="flex flex-col gap-2 bg-white p-4 border-b-8 border-teal-500">
-            <div className='flex flex-col gap-2'>
-              {fields?.map((field: any) => (
-                  <div key={field.name}>
-                      <input 
-                          type={field.type} 
-                          value={formData[field.name]} 
-                          onChange={(e) => handleChange(e, field)} 
-                          placeholder={field.placeholder}
-                          className="px-1 py-2 w-full border-b-4 border-teal-500 border-2 text-black"
-                      />
-                  </div>
-              ))}
-            </div>
-            <button 
-                onClick={handleRequest}
-                className="bg-teal-500 text-white"
-            >
-                {buttonText}
-            </button>
-            <div className='border-white'>
-                { response ? <div>
-                <textarea className="w-full text-black p-0 m-0" key={response}>{response}</textarea>
-                </div> :  <></> }
-            </div>
-        </div>
-    );
-}
-
-const AdminSectionFrame = (props: any) => {
-    return <div className="flex gap-2 flex-col">
-        <h1 className={`text-4xl bg-white w-max text-black px-4 py-2 ${rubik.className}`}>{props.title}</h1>
-        <div className='grid grid-cols-3 gap-8'>
-            { props.children }
-        </div>
-    </div>;
-}
-
 export default function Admin() {
+    const apiForms = [
+        {
+          name: 'Get Alive Storks',
+          requestUrl: '/api/storks/alive',
+          requestMethod: 'GET',
+          description: "Retrieves a list of all currently living storks, including their names, tracked locations, and other details.",
+          buttonText: 'Run Get Alive Storks'
+        },
+        {
+          name: 'Get Dead Storks',
+          requestUrl: '/api/storks/dead',
+          requestMethod: 'GET',
+          description: "Retrieves a list of all deceased storks, including their names and other details.",
+          buttonText: 'Run Get Dead Storks'
+        },
+        {
+          name: 'Get Stork By Id',
+          requestUrl: '/api/storks/id/{storkId}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific stork's information using its unique ID.",
+          buttonText: 'Run Get Stork By Id',
+          fields: [
+            { name: 'storkId', type: 'text', placeholder: 'Stork Id' }
+          ]
+        },
+        {
+          name: 'Get Stork By Name',
+          requestUrl: '/api/storks/name/{storkName}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific stork's information using its name.",
+          buttonText: 'Run Get Stork By Name',
+          fields: [
+            { name: 'storkName', type: 'text', placeholder: 'Stork Name' }
+          ]
+        },
+        {
+          name: 'Create New Team',
+          requestUrl: '/api/teams/create',
+          requestMethod: 'POST',
+          description: "Creates a new team with a given name and captain's ID.",
+          buttonText: 'Run Create New Team',
+          fields: [
+            { name: 'name', type: 'text', placeholder: 'Team Name' },
+            { name: 'captain', type: 'text', placeholder: 'Captain ID' }
+          ]
+        },
+        {
+          name: 'Add Team Member By Id',
+          requestUrl: '/api/teams/{teamId}/members/add',
+          requestMethod: 'POST',
+          description: "Adds a new member to a specified team using the member's unique ID.",
+          buttonText: 'Run Add Team Member By Id',
+          fields: [
+            { name: 'id', type: 'text', placeholder: 'Member ID' },
+            { name: 'teamId', type: 'text', placeholder: 'Team ID' }
+          ]
+        },
+        {
+          name: 'Get Team Members By Id',
+          requestUrl: '/api/teams/{teamId}/members/get',
+          requestMethod: 'GET',
+          description: "Retrieves all members of a specified team using the team's unique ID.",
+          buttonText: 'Run Get Team Members By Id',
+          fields: [
+            { name: 'teamId', type: 'text', placeholder: 'Team ID' }
+          ]
+        },
+        {
+          name: 'Remove Team Member By Id',
+          requestUrl: '/api/teams/{teamId}/members/remove',
+          requestMethod: 'POST',
+          description: "Removes a member from a specified team using the member's unique ID.",
+          buttonText: 'Run Remove Team Member By Id',
+          fields: [
+            { name: 'id', type: 'text', placeholder: 'Member ID' },
+            { name: 'teamId', type: 'text', placeholder: 'Team ID' }
+          ]
+        },
+        {
+          name: 'Get Team By Name',
+          requestUrl: '/api/teams/name/{teamName}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific team's information using its name.",
+          buttonText: 'Run Get Team By Name',
+          fields: [
+            { name: 'teamName', type: 'text', placeholder: 'Team Name' }
+          ]
+        },
+        {
+          name: 'Get Team By Id',
+          requestUrl: '/api/teams/{teamId}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific team's information using its unique ID.",
+          buttonText: 'Run Get Team By Id',
+          fields: [
+            { name: 'teamId', type: 'text', placeholder: 'Team ID' }
+          ]
+        },
+        {
+          name: 'Create New User',
+          requestUrl: '/api/users/create',
+          requestMethod: 'POST',
+          description: "Creates a new user with a given name and email address.",
+          buttonText: 'Run Create New User',
+          fields: [
+            { name: 'name', type: 'text', placeholder: 'User Name' },
+            { name: 'email', type: 'text', placeholder: 'User Email' }
+          ]
+        },
+        {
+          name: 'Get User By Email',
+          requestUrl: '/api/users/{email}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific user's information using their email address.",
+          buttonText: 'Run Get User By Email',
+          fields: [
+            { name: 'email', type: 'text', placeholder: 'User Email' }
+          ]
+        }
+    ];
+    
+      
+    const [selectedAPI, setSelectedAPI] = useState();
+    const [visibleAPIs, setVisibleAPIs] = useState(apiForms);
+      
     return (
-        <main>
+        <main className="w-full p-0">
             <div><Toaster/></div>
-            <div className="flex gap-4 flex-col">
-                <AdminSectionFrame title="Storks">
+            <div className='flex w-full gap-4 p-4'>
+                <div className='w-1/2 sm:w-1/4'>
+                    <APINameCombobox elements={apiForms} setSelected={setSelectedAPI} selected={selectedAPI} visible={visibleAPIs} setVisible={setVisibleAPIs}/>
+                </div>
+                <div className=''>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {visibleAPIs.map((form, index) => (
                         <APIForm 
-                            requestUrl='/api/storks/alive'
-                            requestMethod='GET'
-                            buttonText='Get Alive Storks'
+                            key={index}
+                            requestUrl={form.requestUrl}
+                            requestMethod={form.requestMethod}
+                            buttonText={form.buttonText}
+                            description={form.description}
+                            fields={form.fields}
                         />
-                        <APIForm 
-                            requestUrl='/api/storks/dead'
-                            requestMethod='GET'
-                            buttonText='Get Dead Storks'
-                        />
-                        <APIForm 
-                            requestUrl='/api/storks/id/{storkId}'
-                            requestMethod='GET'
-                            buttonText='Get Stork By Id'
-                            fields={[
-                                {name: 'storkId', type: 'text', placeholder: 'Stork Id'}
-                            ]}
-                        />
-                        <APIForm 
-                            requestUrl='/api/storks/name/{storkName}'
-                            requestMethod='GET'
-                            buttonText='Get Stork By Name'
-                            fields={[
-                                {name: 'storkName', type: 'text', placeholder: 'Stork Name'}
-                            ]}
-                        />
-                </AdminSectionFrame>
-                <AdminSectionFrame title="Teams">
-                    <APIForm 
-                        requestUrl='/api/teams/create'
-                        requestMethod='POST'
-                        buttonText='Create New Team'
-                        fields={[
-                            {name: 'name', type: 'text', placeholder: 'Team Name'},
-                            {name: 'captain', type: 'text', placeholder: 'Captain ID'}
-                        ]}
-                    />
-                </AdminSectionFrame>
+                    ))}
+                    </div>
+                </div>
             </div>
         </main>
     )

@@ -17,15 +17,6 @@ const getStorksAlive = async (route: string): Promise<DBStork[]> => {
     return docs;
 }
 
-/**
- * @swagger
- * /api/storks/alive:
- *   get:
- *     description: Returns all alive storks
- *     responses:
- *       200:
- *         description: Alive storks
- */
 export async function GET(
     request: NextRequest
 ) {

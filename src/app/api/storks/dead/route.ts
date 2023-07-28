@@ -17,17 +17,6 @@ const getStorksDead = async (route: string): Promise<DBStork[]> => {
     return docs;
 }
 
-/**
- * @swagger
- * /api/storks/dead:
- *   get:
- *     description: Returns all dead storks
- *     responses:
- *       200:
- *         description: Dead storks
- *       400:
- *         description: Stork not found
- */
 export async function GET(
     request: NextRequest
 ) {

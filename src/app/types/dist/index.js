@@ -41,6 +41,7 @@ var DBUser = /** @class */ (function (_super) {
         _this._id = _id;
         return _this;
     }
+    DBUser.typeName = "DBUser";
     return DBUser;
 }(User));
 exports.DBUser = DBUser;
