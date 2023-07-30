@@ -1,28 +1,27 @@
 'use client'
 import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Rubik_Mono_One, Roboto } from 'next/font/google'
 import APIForm from './APIForm';
 import APINameCombobox from './APISearchCombobox';
-
-const roboto = Roboto({ weight: "400", subsets: ["latin"] });
-const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
+import { APIForm as APIFormType } from '../types';
 
 export default function Admin() {
-    const apiForms = [
+    const apiForms: APIFormType[] = [
         {
           name: 'Get Alive Storks',
           requestUrl: '/api/v1/storks/alive',
           requestMethod: 'GET',
           description: "Retrieves a list of all currently living storks, including their names, tracked locations, and other details.",
-          buttonText: 'Run Get Alive Storks'
+          buttonText: 'Run Get Alive Storks',
+          fields: []
         },
         {
           name: 'Get Dead Storks',
           requestUrl: '/api/v1/storks/dead',
           requestMethod: 'GET',
           description: "Retrieves a list of all deceased storks, including their names and other details.",
-          buttonText: 'Run Get Dead Storks'
+          buttonText: 'Run Get Dead Storks',
+          fields: []
         },
         {
           name: 'Get Stork By Id',
@@ -130,7 +129,6 @@ export default function Admin() {
         }
     ];
     
-      
     const [selectedAPI, setSelectedAPI] = useState();
     const [visibleAPIs, setVisibleAPIs] = useState(apiForms);
       

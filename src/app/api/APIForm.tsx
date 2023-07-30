@@ -6,28 +6,42 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
     const ref = useRef();
     const [response, setResponse] = useState("");
     const [formData, setFormData] = useState(() => {
-        return fields ? fields.reduce((acc: any, field: any) => (
+        return fields.reduce((acc: any, field: any) => (
             { ...acc, [field.name]: "" }
-        ), {}) : {};
-     });     
+        ), {})
+     });
+    // const [formData, setFormData] = useState({});   
     const [curlCommand, setCurlCommand] = useState("");
+    const [fieldElements, setFieldElements] = useState(<></>);
 
     useEffect(() => {
-        setFormData(
-            fields ? fields.reduce((acc: any, field: any) => (
-                { ...acc, [field.name]: "" }
-            ), {}) : {}
-        );
-     }, [fields]);     
+        setFormData(fields.reduce((acc: any, field: any) => (
+            { ...acc, [field.name]: "" }
+        ), {}));
+    }, [fields])
 
-
-    const handleChange = (e: any, field: any) => {
-        setFormData({ ...formData, [field.name]: e.target.value });
-    }
+    useEffect(() => {
+        const handleChange = (e: any, field: any) => {
+            setFormData({ ...formData, [field.name]: e.target.value });
+        }
+    
+        if (fields.length > 0 && formData) {
+            setFieldElements(fields?.map((field: any) => ( // slow because it has to update all of the inputs whenever one changes...and it doesn't have an initial state.
+                <input 
+                    type={field.type}
+                    key={field.name}
+                    value={formData.hasOwnProperty(field.name) ? formData[field.name] : ""} 
+                    onChange={(e) => handleChange(e, field)} 
+                    placeholder={field.placeholder}
+                    className="px-4 py-2 w-full border-b-0 border-neutral-600 border-0 text-white bg-neutral-600 rounded-lg"
+                />
+            )));
+        }
+    }, [formData, fields])
 
     const handleRequest = async () => {
         let newRequestURL = requestUrl;
-        if (fields && newRequestURL.includes("{")) {
+        if (fields.length > 0 && newRequestURL.includes("{")) {
             // Use regular expression to find text between curly braces
             let regex = /\{(\w+)\}/g;
             let match;
@@ -42,7 +56,7 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
                 }
             }
         }
-        if (fields) {
+        if (fields.length > 0) {
             if(Object.values(formData).some(value => value === "")) {
                 toast.error("All fields are required");
                 return;
@@ -65,6 +79,7 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
                 body: JSON.stringify(formData),
             }
         }
+        console.log(newRequestURL)
         let request = fetch(newRequestURL, options);
         const response = await request;
         const data = await response.text();
@@ -78,7 +93,7 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
 
     const getCurl: any = () => {
         let newRequestURL = requestUrl;
-        if (fields && newRequestURL.includes("{")) {
+        if (fields.length > 0 && newRequestURL.includes("{")) {
             // Use regular expression to find text between curly braces
             let regex = /\{(\w+)\}/g;
             let match;
@@ -121,26 +136,14 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
     }, [formData])
 
     return (
-        <div className='bg-neutral-800 border-b-4 border-neutral-800 rounded-xl p-4'>
+        <section className='bg-neutral-800 border-b-4 border-neutral-800 rounded-xl p-4'>
             <div className='flex pb-2'>
                 <span className={`border-2 ${requestMethod == "GET" ? "border-lime-400": "border-red-400"} rounded-full`}></span>
                 <p className='px-2 py-1 rounded-lg text-xl break-all'>{requestUrl}</p>
             </div>
             { description ? <p className='text-sm'>{description}</p> : <></> }
             <div className="flex flex-col gap-4 justify-center pt-4">
-                { fields && formData ? <div className='flex flex-col gap-4'>
-                    {fields?.map((field: any) => (
-                        <div key={field.name}>
-                            <input 
-                                type={field.type} 
-                                value={formData[field.name] || ""} 
-                                onChange={(e) => handleChange(e, field)} 
-                                placeholder={field.placeholder}
-                                className="px-4 py-2 w-full border-b-0 border-neutral-600 border-0 text-white bg-neutral-600 rounded-lg"
-                            />
-                        </div>
-                    ))}
-                </div> : <></> }
+                { fieldElements }
                 <button 
                     onClick={handleRequest}
                     className="bg-neutral-800 text-white border-2 border-teal-400 hover:bg-teal-600 hover:border-teal-600 rounded-xl"
@@ -161,7 +164,7 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
                         </textarea>
                     </div> : <></>}
                 </div>
-        </div>
+        </section>
     );
 }
 

@@ -26,6 +26,7 @@ const authOptions = {
       return true;
     },
     session: async ({ session, token }: { session: Session, token: any }) => {
+      console.log(session, token)
       if (session?.user) {
         const dbUser: DBUser = await getUserByEmail("auth/session/getUser", session?.user.email);
         session.user = dbUser;
