@@ -1,36 +1,6 @@
-import { DBUser, DatabaseObject, User } from '@/app/types';
-import client from '@/lib/mongodb'
+import { MissingRequestBodyError } from '@/app/types/errors';
 import { NextRequest, NextResponse } from 'next/server'
-import { FailedToCreateError, MissingRequestBodyError } from '@/app/types/errors';
-
-if (!process.env.DEFAULT_DUES){
-    throw new Error("DEFAULT_DUES not in .env");
-}
-const dues: number = Number(process.env.DEFAULT_DUES);
-
-const createUser = async (route: string, name: string, email: string) => {
-    const dbClient = await client;
-    const db = dbClient.db('stork-gt');
-    const collection = db.collection('users');
-    const filter = { email: email };
-    const user: User = new User({
-        name: name,
-        email: email,
-        dues: dues,
-        role: "Member",
-        admin: false
-    });
-    const update = {
-        $setOnInsert: user
-    };
-    const options = { upsert: true, returnNewDocument: true };
-    try {
-        const doc = await collection.findOneAndUpdate(filter, update, options);
-        return doc;
-    } catch (e) {
-        throw new FailedToCreateError(route, DBUser);
-    }
-}
+import { createUser } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
     const route = "/api/v1/users/create"

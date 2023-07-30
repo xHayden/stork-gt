@@ -1,24 +1,24 @@
 import fetchToCurl from "fetch-to-curl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }: any) => {
+    const ref = useRef();
     const [response, setResponse] = useState("");
-    const initialFormData = fields ? fields.reduce((acc: any, field: any) => (
-        { ...acc, [field.name]: "" }
-    ), {}) : {};
-    const [formData, setFormData] = useState<{[key: string]: string}>(initialFormData);
+    const [formData, setFormData] = useState(() => {
+        return fields ? fields.reduce((acc: any, field: any) => (
+            { ...acc, [field.name]: "" }
+        ), {}) : {};
+     });     
     const [curlCommand, setCurlCommand] = useState("");
 
     useEffect(() => {
-        if (fields) {
-            setFormData(
-                fields.reduce((acc: any, field: any) => (
-                    { ...acc, [field.name]: "" }
-                ), {})
-            );
-        }
-    }, [fields]);
+        setFormData(
+            fields ? fields.reduce((acc: any, field: any) => (
+                { ...acc, [field.name]: "" }
+            ), {}) : {}
+        );
+     }, [fields]);     
 
 
     const handleChange = (e: any, field: any) => {
@@ -44,7 +44,7 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
         }
         if (fields) {
             if(Object.values(formData).some(value => value === "")) {
-                // toast.error("All fields are required");
+                toast.error("All fields are required");
                 return;
             }
         }
@@ -129,17 +129,17 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
             { description ? <p className='text-sm'>{description}</p> : <></> }
             <div className="flex flex-col gap-4 justify-center pt-4">
                 { fields && formData ? <div className='flex flex-col gap-4'>
-                {fields?.map((field: any) => (
-                    <div key={field.name}>
-                        <input 
-                            type={field.type} 
-                            value={formData[field.name]} 
-                            onChange={(e) => handleChange(e, field)} 
-                            placeholder={field.placeholder}
-                            className="px-4 py-2 w-full border-b-0 border-neutral-600 border-0 text-white bg-neutral-600 rounded-lg"
-                        />
-                    </div>
-                ))}
+                    {fields?.map((field: any) => (
+                        <div key={field.name}>
+                            <input 
+                                type={field.type} 
+                                value={formData[field.name] || ""} 
+                                onChange={(e) => handleChange(e, field)} 
+                                placeholder={field.placeholder}
+                                className="px-4 py-2 w-full border-b-0 border-neutral-600 border-0 text-white bg-neutral-600 rounded-lg"
+                            />
+                        </div>
+                    ))}
                 </div> : <></> }
                 <button 
                     onClick={handleRequest}
@@ -156,11 +156,10 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
                 >
                     Get cURL
                 </button>
-                    { <div className='border-white'>
-                        <p className="w-full break-all text-white p-0 m-0 bg-neutral-800 no-scrollbar max-h-40 overflow-scroll" contentEditable={true}>
-                            {response}
-                        </p>
-                    </div>}
+                    { response ? <div className='border-white'>
+                        <textarea className="text-white w-full p-0 m-0 bg-neutral-800 no-scrollbar max-h-40 overflow-scroll" value={response}>
+                        </textarea>
+                    </div> : <></>}
                 </div>
         </div>
     );

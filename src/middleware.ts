@@ -5,14 +5,12 @@ const authenticatedRoutes = [
     "/logout"
   ];
 
-export default withAuth((req) => {
-        
-    },
+export default withAuth((req) => {},
     {
         callbacks: {
             authorized: ({ req, token }) => {
                 return !(authenticatedRoutes.some(route => req.url.startsWith(route)) && token === null)
-            }
+            },
         }
     }
 )

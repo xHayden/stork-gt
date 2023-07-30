@@ -32,7 +32,7 @@ export default function NavBar(props: NavBarProps) {
             <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row`}>
                 <a>Mapbox</a>
                 <a>Rankings</a>
-                <button onClick={() => signIn()}>Sign in</button>
+                <a onClick={() => signIn()}>Sign in</a>
             </div>
         </nav>
     );

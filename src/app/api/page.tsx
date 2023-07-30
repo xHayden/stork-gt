@@ -138,10 +138,10 @@ export default function Admin() {
         <main className="">
             <div><Toaster/></div>
             <div className='flex w-full gap-4 p-4 4xl:w-2/3'>
-                <div className='w-1/2 sm:w-1/4'>
+                <div className='w-1/2 sm:w-1/4 md:w-1/5'>
                     <APINameCombobox elements={apiForms} setSelected={setSelectedAPI} selected={selectedAPI} visible={visibleAPIs} setVisible={setVisibleAPIs}/>
                 </div>
-                <div className=''>
+                <div className='w-1/2 sm:w-3/4 md:w-4/5'>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {visibleAPIs.map((form, index) => (
                         <APIForm 

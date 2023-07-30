@@ -1,32 +1,38 @@
 // import { authenticate } from "@/services/authService"
-import NextAuth from "next-auth"
-import type { AuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
+import NextAuth, { Session } from "next-auth"
+import GithubProvider from "next-auth/providers/github"
+import { createUser, getUserByEmail } from "@/lib/utils";
+import { DBUser } from "@/app/types";
 
-const authOptions: AuthOptions = {
+if (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET) {
+  throw new Error("Set Github OAuth in .env");
+}
+
+const authOptions = {
+  // Configure one or more authentication providers
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize (credentials, req) {
-        return true;
-        // if (credentials) {
-        //   const res = await authenticate(credentials.email, credentials.password)
-        //   if (res) {
-        //     return { ...res.user, apiToken: res.token }
-        //   } else {
-        //     return null
-        //   }
-        // } else {
-        //   return null
-        // }
-      }
-    })
+    GithubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
+    }),
+    // ...add more providers here
   ],
-  session: { strategy: "jwt" }
+  callbacks: {
+    async signIn({ account, profile }: any) {
+      if (account && account.provider === "github" && profile.email && profile.name) {
+        createUser("auth/signIn/createUser", profile.name, profile.email);
+        return true;
+      }
+      return true;
+    },
+    session: async ({ session, token }: { session: Session, token: any }) => {
+      if (session?.user) {
+        const dbUser: DBUser = await getUserByEmail("auth/session/getUser", session?.user.email);
+        session.user = dbUser;
+      }
+      return session;
+    },
+  }
 }
 
 const handler = NextAuth(authOptions)
