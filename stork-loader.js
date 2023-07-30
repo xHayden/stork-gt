@@ -1,7 +1,7 @@
 const axios = require('axios');
 const fs = require('fs').promises;
 
-const baseURL = 'http://localhost:3000/api/storks/create';
+const baseURL = 'http://localhost:3000/api/v1/storks/create';
 
 async function sendStorkData(stork) {
     try {

@@ -7,12 +7,11 @@ html {
 }
 
 body {
-  @apply m-0 w-screen bg-teal-500;
-  color: black;
+  @apply bg-orange-100 w-auto;
 }
 
 button {
-  @apply bg-white p-2 border-b-4 border-black;
+  @apply bg-red-400 px-6 py-4 border-b-4 border-red-600 hover:scale-105 transition-all text-orange-100;
 }
 
 main {
@@ -20,7 +19,7 @@ main {
 }
 
 nav {
-  @apply bg-white border-black;
+  @apply bg-red-400 border-red-600 text-orange-50;
 }
 
 .stretch {

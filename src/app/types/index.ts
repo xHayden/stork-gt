@@ -177,5 +177,5 @@ export interface APIForm {
     requestMethod: string
     buttonText: string
     description?: string
-    fields?: APIFormField[]
+    fields: APIFormField[]
 }
