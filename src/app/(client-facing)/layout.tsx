@@ -3,7 +3,7 @@ import '../globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Stork Race @ GT',
+  title: 'Fantasy Stork League @ GT',
   description: 'The only Fantasy League where teams bet on which storks will migrate the fastest',
 }
 

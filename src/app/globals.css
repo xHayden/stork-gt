@@ -11,7 +11,10 @@ body {
 }
 
 button {
-  @apply bg-red-400 px-6 py-4 border-b-4 border-red-600 hover:scale-105 transition-all text-orange-100;
+  @apply bg-red-400 px-6 py-4 border-b-4 border-red-600 hover:scale-[101%] transition-all text-orange-100;
+}
+
+img {
 }
 
 main {
@@ -22,6 +25,10 @@ nav {
   @apply bg-red-400 border-red-600 text-orange-50;
 }
 
+nav a {
+  text-shadow: 0em 0.1em 0px rgb(113, 9, 9); 
+}
+
 .stretch {
   display:inline-block;
   -webkit-transform:scale(1,2); /* Safari and Chrome */
@@ -29,4 +36,16 @@ nav {
   -ms-transform:scale(1,2); /* IE 9 */
   -o-transform:scale(1,2); /* Opera */
   transform:scale(1,2); /* W3C */
+}
+
+.text-shadow {
+  text-shadow: -0.05em 0.05em 0px rgb(113, 9, 9); /* horizontal offset, vertical offset, blur radius, shadow color */
+}
+
+.text-shadow-2 {
+  text-shadow: -0.05em 0.05em 0px rgb(239 68 68); /* horizontal offset, vertical offset, blur radius, shadow color */
+}
+
+.text-shadow-3 {
+  text-shadow: -0.05em 0.05em 0px white; /* horizontal offset, vertical offset, blur radius, shadow color */
 }

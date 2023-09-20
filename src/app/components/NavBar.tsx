@@ -26,15 +26,15 @@ export default function NavBar(props: NavBarProps) {
             <div className="flex justify-between items-center">
                 <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row`}>
                     <Link href="/">Home</Link>
-                    <Link href="/about">About</Link>
-                    <Link href="/store">Store</Link>
+                    {/* <Link href="/about">About</Link> */}
+                    {/* <Link href="/store">Store</Link> */}
                 </div>
             </div>
-            <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row`}>
+            {/* <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row`}>
                 <Link href="/map">Map</Link>
                 <Link href="/ranking">Ranking</Link>
                 <a onClick={() => signIn()}>Sign in</a>
-            </div>
+            </div> */}
         </nav>
     );
 }

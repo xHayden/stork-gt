@@ -1,0 +1,13 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+    <!-- Stripe 1 -->
+    <path d="M 0 600 A 800 800 0 0 1 1000 600 L 1000 570 A 770 770 0 0 0 0 570 Z" fill="black"/>
+    
+    <!-- Stripe 2 -->
+    <path d="M 0 430 A 630 630 0 0 1 1000 430 L 1000 400 A 600 600 0 0 0 0 400 Z" fill="black"/>
+
+    <!-- Stripe 3 -->
+    <path d="M 0 260 A 460 460 0 0 1 1000 260 L 1000 230 A 430 430 0 0 0 0 230 Z" fill="black"/>
+
+    <!-- Stripe 4 -->
+    <path d="M 0 90 A 290 290 0 0 1 1000 90 L 1000 60 A 260 260 0 0 0 0 60 Z" fill="black"/>
+</svg>
