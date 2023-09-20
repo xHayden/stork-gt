@@ -14,11 +14,11 @@ const RankingItem: React.FC<RankingItemProps> = ({ rank, name }) => {
 export default function Rankings() {
     return <main>
         <div>
-            {
+            {/* {
                 Array.from(5).map((index) => {
                     return <RankingItem key={index} rank={index} name="Test"></RankingItem>
                 })
-            }
+            } */}
         </div>
     </main>
 }
