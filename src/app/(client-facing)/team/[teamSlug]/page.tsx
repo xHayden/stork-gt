@@ -1,4 +1,3 @@
-import { getTeams } from '@/app/api/v1/teams/route';
 import { DBTeam } from '@/app/types';
 import type {
     GetStaticPaths
