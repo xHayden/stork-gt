@@ -1,10 +1,10 @@
 "use client"
 import type { Metadata } from 'next'
-import { Rubik_Mono_One } from 'next/font/google'
 import { SessionProvider } from "next-auth/react"
 import { Session } from 'next-auth';
-
-const angkor = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
+import { MantineProvider } from '@mantine/core';
 
 export default function RootLayout({
   children,
@@ -15,10 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className=''>
-      <body className={`${angkor.className} flex-col flex min-h-screen`}>
-        <SessionProvider session={session}>
-          {children}
-        </SessionProvider>
+      <body className={`flex-col flex min-h-screen`}>
+        <MantineProvider>
+          <SessionProvider session={session}>
+            {children}
+          </SessionProvider>
+        </MantineProvider>
       </body>
     </html>
   )

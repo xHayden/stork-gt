@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import NavBar from "../components/NavBar";
 import { Roboto } from 'next/font/google'
 
-const angkor = Roboto({ weight: "400", subsets: ["latin"] });
+const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default function RootLayout({
     <div className={`flex w-full justify-end md:justify-normal`}>
       <NavBar admin={true}/>
     </div>
-    <div className={`${angkor.className}`}>
+    <div className={`${roboto.className}`}>
         {children}
     </div>
     </>

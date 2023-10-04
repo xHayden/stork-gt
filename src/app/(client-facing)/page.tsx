@@ -1,12 +1,13 @@
 import Disclaimer from '@/app/components/Disclaimer'
-import { Roboto } from 'next/font/google';
+import { Roboto, Rubik_Mono_One } from 'next/font/google';
 import Image from 'next/image'
 
+const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 
 export default function Home() {
   return (
-    <main className="my-6 mx-2 3xl:my-24 flex-col flex gap-12 xl:gap-16 3xl:gap-24">
+    <main className={`my-6 mx-2 3xl:my-24 flex-col flex gap-12 xl:gap-16 3xl:gap-24 ${rubik.className}`}>
       <div className='flex justify-center items-center 3xl:items-start flex-grow'>
         <div className='gap-8 flex flex-col items-center md:max-w-[70em] 2xl:max-w-[100em] w-full'> 
           <h1 className="text-5xl md:text-6xl lg:text-8xl text-red-500 text-shadow md:self-center md:text-center">It&apos;s Storkin&apos; Time!</h1>
@@ -30,7 +31,7 @@ export default function Home() {
           </p>
           <div className='flex justify-center text-lg w-full'>
             <a href='https://discord.gg/MxgNmdTKak' target='_blank' className='w-full'>
-              <button className='md:text-2xl lg:text-4xl w-full text-orange-100 bg-red-500 border-red-700'>
+              <button className='md:text-2xl lg:text-4xl w-full text-orange-100 bg-red-500 border-red-700 py-4'>
                 Join Fantasy Stork League
               </button>
             </a>

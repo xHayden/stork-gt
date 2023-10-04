@@ -5,7 +5,7 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { email: string } }
 ) {
-  const route = `api/v1/users/${params.email}`
+  const route = `api/v1/users/email/${params.email}`
   try {
     const user = await getUserByEmail(route, params.email);
     return NextResponse.json(user);

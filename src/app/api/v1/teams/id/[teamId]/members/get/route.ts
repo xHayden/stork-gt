@@ -29,7 +29,7 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { teamId: ObjectId } }
 ) {
-    const route = "/api/v1/teams/${params.teamId}/members/get";
+    const route = "/api/v1/teams/id/${params.teamId}/members/get";
     try {
       const members = await getTeamMembersById(route, params.teamId);
       return NextResponse.json(members);

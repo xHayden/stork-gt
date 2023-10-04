@@ -30,7 +30,7 @@ export async function POST(
     req: NextRequest,
     { params }: { params: { teamId: ObjectId } }
 ) {
-    const route = "/api/v1/teams/${params.teamId}/members/add";
+    const route = "/api/v1/teams/id/${params.teamId}/members/add";
     if (!req.body) {
         throw new MissingRequestBodyError(route);
     }

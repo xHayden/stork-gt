@@ -1,7 +1,46 @@
 import { DBUser, User } from '@/app/types';
 import client from '@/lib/mongodb'
-import { Db, Collection } from 'mongodb';
+import { Db, Collection, ObjectId } from 'mongodb';
 import { ObjectNotFoundError, FailedToCreateError } from '@/app/types/errors';
+
+export const searchUserByName = async (route: string, nameStart: string): Promise<DBUser[]> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBUser> = db.collection('users');
+    const regex = new RegExp(`^${nameStart}`, 'i');
+    const filter = { name: regex };
+    const docs: DBUser[] = await collection.find(filter).limit(10).toArray();
+    if (!docs.length) {
+        throw new ObjectNotFoundError(route, DBUser);
+    }
+    return docs;
+}
+
+
+export const getUserById = async (route: string, id: string): Promise<DBUser> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBUser> = db.collection('users');
+    const filter = { _id: new ObjectId(id) };
+    const doc: DBUser | null = await collection.findOne(filter);
+    if (!doc) {
+        throw new ObjectNotFoundError(route, DBUser);
+    }
+    return doc;
+}
+
+export const getUsersByName = async (route: string, name: string): Promise<DBUser[]> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBUser> = db.collection('users');
+    const filter = {};
+    const cursor = collection.find(filter);
+    const docs: DBUser[] = await cursor.toArray();
+    if (docs.length === 0) {
+        throw new ObjectNotFoundError(route, DBUser);
+    }
+    return docs;
+}
 
 export const getUserByEmail = async (route: string, email: string): Promise<DBUser> => {
     const dbClient = await client;
