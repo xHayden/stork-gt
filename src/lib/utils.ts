@@ -1,7 +1,32 @@
-import { DBUser, User } from '@/app/types';
+import { DBUser, User, DBTeam } from '@/app/types';
 import client from '@/lib/mongodb'
 import { Db, Collection, ObjectId } from 'mongodb';
 import { ObjectNotFoundError, FailedToCreateError } from '@/app/types/errors';
+
+export const getTeamByName = async (route: string, name: string): Promise<DBTeam> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBTeam> = db.collection('teams');
+    const filter = { name: name };
+    const doc: DBTeam | null = await collection.findOne(filter);
+    if (!doc) {
+        throw new ObjectNotFoundError(route, DBTeam);
+    }
+    return doc;
+}
+
+export const getTeams = async (route: string): Promise<DBTeam[]> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBTeam> = db.collection('teams');
+    const filter = {};
+    const cursor = collection.find(filter);
+    const docs: DBTeam[] = await cursor.toArray();
+    if (docs.length === 0) {
+        throw new ObjectNotFoundError(route, DBTeam);
+    }
+    return docs;
+}
 
 export const searchUserByName = async (route: string, nameStart: string): Promise<DBUser[]> => {
     const dbClient = await client;
