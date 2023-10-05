@@ -1,4 +1,6 @@
+import { Toaster } from 'react-hot-toast'
 import NavBar from '../components/NavBar'
+import { Notifications } from '../components/Notifications'
 import '../globals.css'
 import type { Metadata } from 'next'
 
@@ -14,8 +16,12 @@ export default function RootLayout({
 }) {
   return (<>
     <div className='flex w-full justify-end md:justify-normal'>
+      <Toaster />
       <NavBar/>
     </div>
     {children}
+    <div className='sticky bottom-0'>
+      <Notifications />
+    </div>
   </>)
 }

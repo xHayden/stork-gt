@@ -31,6 +31,15 @@ export class FailedToCreateError extends APIRequestError {
     }
 }
 
+export class FailedToDeleteError extends APIRequestError {
+    constructor(route: string, type: any) {
+        if (!type?.typeName) {
+            throw new Error("Illegal error creation, missing typeName.");
+        }
+        super(route, "Failed to delete: " + typeof(type));
+    }
+}
+
 export class AlreadyExistsError extends APIRequestError {
     constructor(route: string, type: any) {
         if (!type?.typeName) {

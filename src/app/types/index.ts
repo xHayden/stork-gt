@@ -179,3 +179,70 @@ export interface APIForm {
     description?: string
     fields: APIFormField[]
 }
+
+export interface INotification {
+    title: string;
+    message: string;
+    type: 'info' | 'warning' | 'error' | 'success';
+    timestamp: string;
+    read: boolean;
+    user: ObjectId;
+    confirmAction: NotificationAction | null;
+    rejectAction: NotificationAction | null;
+}
+
+export interface IDBNotification extends INotification, IDatabaseObject {
+    _id: ObjectId;
+}
+
+export class Notification extends DatabaseObject implements INotification {
+    title!: string;
+    message!: string;
+    user!: ObjectId;
+    type!: 'info' | 'warning' | 'error' | 'success';
+    timestamp!: string;
+    read!: boolean;
+    confirmAction!: NotificationAction | null;
+    rejectAction!: NotificationAction | null;
+    constructor(notification: INotification) {
+        super("Notification");
+        Object.assign(this, notification);
+    }
+}
+
+export type NotificationAction =
+    | { type: 'OPEN_URL'; args: {url: string} }
+    | { type: 'MARK_AS_READ'; args: {itemId: number} }
+    | { type: 'ACCEPT_INVITE'; args: {teamId: string} }
+    | { type: 'REJECT_INVITE'; args: {teamId: string} }
+
+export const actionValidationSchemas: Record<string, (args: any) => boolean> = {
+    'OPEN_URL': (args) => typeof args.url === 'string',
+    'MARK_AS_READ': (args) => typeof args.itemId === 'number',
+    'ACCEPT_INVITE': (args) => typeof args.teamId === 'string',
+    'REJECT_INVITE': (args) => typeof args.teamId === 'string',
+    // Add new schemas as new action types are introduced
+};
+
+export function isValidAction(action: string): boolean {
+    console.log(action)
+    try {
+        const notificationAction: NotificationAction = JSON.parse(action);
+        const validator = actionValidationSchemas[notificationAction.type];
+        console.log(action)
+        console.log(validator)
+        return validator ? validator(notificationAction.args) : false;
+    } catch (e) {
+        return false;
+    }
+}
+    
+
+export class DBNotification extends Notification implements IDBNotification {
+    static typeName = "DBNotification";
+    _id: ObjectId
+    constructor(_id: ObjectId, notification: INotification) {
+        super(notification);
+        this._id = _id;
+    }
+}

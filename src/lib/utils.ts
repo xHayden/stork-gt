@@ -1,7 +1,23 @@
-import { DBUser, User, DBTeam } from '@/app/types';
+import { DBUser, User, DBTeam, DBNotification } from '@/app/types';
 import client from '@/lib/mongodb'
 import { Db, Collection, ObjectId } from 'mongodb';
-import { ObjectNotFoundError, FailedToCreateError } from '@/app/types/errors';
+import { ObjectNotFoundError, FailedToCreateError, FailedToDeleteError } from '@/app/types/errors';
+
+export const deleteNotification = async (route: string, id: string) => {
+    const dbClient = await client;
+    const db = dbClient.db('stork-gt');
+    const collection = db.collection('notifications');
+    try {
+        const result = await collection.deleteOne({ _id: new ObjectId(id) });
+        if (result.deletedCount === 0) {
+            throw new Error(`No notification found with id: ${id}`);
+        }
+        return result;
+    } catch (e) {
+        throw new FailedToDeleteError(route, DBNotification);
+    }
+}
+
 
 export const getTeamByName = async (route: string, name: string): Promise<DBTeam> => {
     const dbClient = await client;
@@ -106,4 +122,28 @@ export const createUser = async (route: string, name: string, email: string) => 
     } catch (e) {
         throw new FailedToCreateError(route, DBUser);
     }
+}
+
+export const getNotificationById = async (route: string, id: string) => { 
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBNotification> = db.collection('notifications');
+    const filter = { _id: new ObjectId(id) };
+    const doc: DBNotification | null = await collection.findOne(filter);
+    if (!doc) {
+        throw new ObjectNotFoundError(route, DBNotification);
+    }
+    return doc;
+}
+
+export const getNotificationsByUserId = async (route: string, id: string) => { 
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBNotification> = db.collection('notifications');
+    const filter = { user: new ObjectId(id) };
+    const docs: DBNotification[] = await collection.find(filter).toArray();
+    if (!docs.length) {
+        throw new ObjectNotFoundError(route, DBNotification);
+    }
+    return docs;
 }

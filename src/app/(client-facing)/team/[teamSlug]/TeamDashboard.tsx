@@ -6,7 +6,7 @@ import { Combobox, useCombobox, TextInput } from '@mantine/core';
 import { ObjectNotFoundError } from '@/app/types/errors';
 import { DBStork, DBTeam, DBUser, User } from '@/app/types';
 import { Roboto, Rubik_Mono_One } from 'next/font/google';
-import { Toaster, toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
@@ -60,7 +60,6 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     }, [params.teamSlug])
 
     return (team != undefined && members != undefined) ? <div className='mx-2'>
-        <div><Toaster/></div>
         <div className='max-w-screen-lg'>
             <h1 className={`text-4xl ${rubik.className}`}>{team.name}</h1>
             <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Members:</h2>

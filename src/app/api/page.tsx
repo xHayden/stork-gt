@@ -118,6 +118,21 @@ export default function Admin() {
           ]
         },
         {
+          name: 'Create New Notification',
+          requestUrl: '/api/v1/notifications/create',
+          requestMethod: 'POST',
+          description: "Creates a new notification with a given title, message, type, and user.",
+          buttonText: 'Run Create New Notification',
+          fields: [
+            { name: 'title', type: 'text', placeholder: 'Title' },
+            { name: 'message', type: 'text', placeholder: 'Message' },
+            { name: 'type', type: 'text', placeholder: "'info' | 'warning' | 'error' | 'success'" },
+            { name: 'user', type: 'text', placeholder: 'User Id' },
+            { name: 'confirmAction', type: "text", placeholder: "{type: '', args: {}}" },
+            { name: 'rejectAction', type: "text", placeholder: "{type: '', args: {}}" }
+          ]
+        },
+        {
           name: 'Get User By Email',
           requestUrl: '/api/v1/users/{email}',
           requestMethod: 'GET',
