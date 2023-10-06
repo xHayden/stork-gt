@@ -20,7 +20,7 @@ const createTeam = async (route: string, team: Team) => {
     }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, res: NextResponse) {
     const route = 'api/v1/teams/create'
     if (!req.body) {
         throw new MissingRequestBodyError(route);
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     if (missing.length > 0) {
         throw new MissingRequestParametersError(route, missing);
     }
+    
     try {
         const res = await createTeam(route, new Team({
             captain: new ObjectId(data.captain), 
