@@ -60,8 +60,8 @@ const ProfileNavItem: React.FC<ProfileNavItemProps> = ({ session }) => {
     });
 
     return <div className="relative">
-        <div className="bg-white rounded-full border-black p-2 border hover:cursor-pointer" ref={iconRef as RefObject<HTMLDivElement>} onClick={() => {setShowDropdown(!showDropdown)}}>
-            <BsPersonCircle size={30} color="black" />
+        <div className="bg-white rounded-full hover:cursor-pointer " ref={iconRef as RefObject<HTMLDivElement>} onClick={() => {setShowDropdown(!showDropdown)}}>
+            <BsPersonCircle size={30} color="rgb(248 113 113)" />
         </div>
         { showDropdown ? <ProfileDropdown session={session} ref={dropdownRef as RefObject<HTMLDivElement>} /> : <></>}
     </div>
@@ -69,13 +69,14 @@ const ProfileNavItem: React.FC<ProfileNavItemProps> = ({ session }) => {
 
 const ProfileDropdown = forwardRef<HTMLDivElement, ProfileDropdownProps>(({session}: ProfileDropdownProps, ref) => {
     return <div ref={ref} className={`absolute right-0 top-full bg-white rounded-xl my-2 w-max px-4 py-2 text-black flex flex-col gap-2 ${roboto.className} shadow-lg`}>
-        <p>Hi, <span className="font-semibold">{session.user.name}</span></p>
+        <p className="text-base">Hi, <span className="font-semibold">{session.user.name}</span></p>
+        <p className="text-sm">{session.user.email}</p>
         <hr></hr>
-        <Link style={{textShadow: "none"}} className="hover:cursor-pointer" href="/profile">Profile</Link>
-        <Link style={{textShadow: "none"}} href="/">My Team</Link>
-        <Link style={{textShadow: "none"}} href="/profile/orders">Order History</Link>
+        <Link style={{textShadow: "none"}} className="text-base" href="/profile">Profile</Link>
+        <Link style={{textShadow: "none"}} className="text-base" href="/">My Team</Link>
+        <Link style={{textShadow: "none"}} className="text-base" href="/profile/orders">Order History</Link>
         <hr></hr>
-        <p className="hover:cursor-pointer">Logout</p>
+        <p className="hover:cursor-pointer text-base" onClick={() => signOut()}>Logout</p>
     </div>
 });
 

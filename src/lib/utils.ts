@@ -23,7 +23,7 @@ export const getTeamByName = async (route: string, name: string): Promise<DBTeam
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');
     const collection: Collection<DBTeam> = db.collection('teams');
-    const filter = { name: name };
+    const filter = { name: { $regex: new RegExp(`^${name}$`, 'i') } };
     const doc: DBTeam | null = await collection.findOne(filter);
     if (!doc) {
         throw new ObjectNotFoundError(route, DBTeam);

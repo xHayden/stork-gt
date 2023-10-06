@@ -9,6 +9,7 @@ import { Roboto, Rubik_Mono_One } from 'next/font/google';
 import { toast } from 'react-hot-toast';
 import useSWR, { mutate } from 'swr';
 import { ObjectId } from 'mongodb';
+import { useSession } from 'next-auth/react';
 
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
@@ -32,6 +33,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     const prevMembersRef = useRef<DBUser[] | undefined>();
     const prevStorksRef = useRef<DBStork[] | undefined>();
     const prevTeamRef = useRef<DBTeam | undefined>();
+    const session = useSession();
 
     const fetcher = async (urls: string | string[]) => {
         const isClient = typeof window !== 'undefined';
@@ -54,7 +56,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     };
             
 
-    const { data: team, error: teamError } = useSWR<DBTeam>(`/api/v1/teams/name/${params.teamSlug}`, fetcher);
+    const { data: team, error: teamError } = useSWR<DBTeam>(`/api/v1/teams/name/${decodeURIComponent(params.teamSlug).toLowerCase()}`, fetcher);
     const { data: members, error: membersError } = useSWR<DBUser[]>(() => team?.members.map((member: ObjectId) => `/api/v1/users/id/${member.toString()}`), fetcher);
     const { data: storks, error: storksError } = useSWR<DBStork[]>(() => team?.storks.map((stork: ObjectId) => `/api/v1/storks/id/${stork.toString()}`), fetcher);
     // Handle errors
@@ -77,9 +79,9 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
         <div className='max-w-screen-lg w-full'>
             <h1 className={`text-4xl ${rubik.className} text-white text-center bg-red-400 border-b-4 border-red-600 p-2 mb-2`}>{teamData.name}</h1>
             <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Members:</h2>
-            <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
+            <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2 flex flex-col gap-2 divide-y-2`}>
                 { membersList && !membersError ? membersList.map((member) => {
-                    return <li key={member.name} className=''>
+                    return <li key={member._id.toString()} className=''>
                         <p className='font'>{member.name}</p>
                         <p className='text-xs'>{member.email}</p>
                         <p className='text-xs'>{member.role}</p>
@@ -87,7 +89,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         </li>
                 }) : <></> }
             </ul>
-            <div className={`${roboto.className} flex gap-2 w-full items-center`}>
+            {session.status == "authenticated" && (JSON.parse(params.team) as DBTeam).members.includes(session.data.user._id) ? <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
                     <SearchCombobox 
                         setItem={setUser}
@@ -103,7 +105,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         label='User'
                     />
                 </div>
-                <div className='gap-2 flex w-max'>
+                <div className='gap-2 flex w-max mb-2'>
                     <button className='w-max highlight-button' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
                         if (!user) {
                             console.log("Member not set");
@@ -112,8 +114,8 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         toast.promise(
                             createNotificationToAddMemberToTeam(userSearchData.find((data) => data._id == user._id), teamData),
                             {
-                                loading: 'Adding...',
-                                success: `Added ${userSearch} to ${teamData.name}`,
+                                loading: 'Requesting to add...',
+                                success: `Request sent to add ${userSearch} to ${teamData.name}`,
                                 error: 'Failed to request to add member to team',
                             }
                         );
@@ -133,7 +135,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         );
                     }}>Remove</button>
                 </div>
-            </div>
+            </div> : <></>}
             <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Storks:</h2>
             <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
                 { (storksList && !storksError) ? storksList.map((stork) => {
@@ -142,7 +144,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         </li>
                 }) : <></> }
             </ul>
-            <div className={`${roboto.className} flex gap-2 w-full items-center`}>
+            {session.status == "authenticated" && (JSON.parse(params.team) as DBTeam).members.includes(session.data.user._id) ? <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
                     <SearchCombobox 
                         setItem={setStork}
@@ -188,7 +190,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         );
                     }}>Remove</button>
                 </div>
-            </div>
+            </div> : <></>}
         </div>
     </div> : <p></p>
 }
@@ -262,7 +264,7 @@ function SearchCombobox({
                     const itemData = await items.json();
                     setItemSearchData(itemData.error ? [] : itemData);
                     setItemSearchError(itemData.error != undefined);
-                    if (!itemData.error && itemData.length > 0) {
+                    if (!itemData.error && itemData.length > 0 && event.currentTarget) {
                         const item = itemData.find((item: (DBStork | DBUser)) => item.name == event.currentTarget.value);
                         if (item && item != -1 && item._id) {
                             setItem(item);
@@ -313,7 +315,14 @@ const addStorkToTeam = async (stork: DBStork | undefined, team: DBTeam) => {
         const res = await response.json();
         throw new Error(res.error || "Error with request to add stork");
       } else {
-        mutate(`/api/v1/teams/name/${team.name}`);     
+        const newStorks: ObjectId[] = JSON.parse(JSON.stringify(team.storks));
+        if (!newStorks.includes(stork._id)) newStorks.push(stork._id);
+        const newTeam: DBTeam = JSON.parse(JSON.stringify(team));
+        newTeam.storks = newStorks;
+        await mutate(`/api/v1/teams/name/${decodeURIComponent(team.name).toLowerCase()}`, newTeam); 
+        newStorks.map(async (item: ObjectId) => {
+            await mutate(`/api/v1/storks/id/${item}`);
+        });  
       }
       const data = await response.json();
       return data;
@@ -374,7 +383,10 @@ const removeStorkFromTeam = async (stork: DBStork | undefined, team: DBTeam) => 
         const res = await response.json();
         throw new Error(res.error || "Error with request to remove stork");
       } else {
-        mutate(`/api/v1/teams/name/${team.name}`, false);
+        const newStorks = team.storks.filter(item => stork._id != item);
+        const newTeam: DBTeam = JSON.parse(JSON.stringify(team));
+        newTeam.storks = newStorks;
+        await mutate(`/api/v1/teams/name/${decodeURIComponent(team.name).toLowerCase()}`, newTeam);
       }
       const data = await response.json();
       return data;
@@ -402,7 +414,10 @@ const removeMemberFromTeam = async (member: DBUser | undefined, team: DBTeam) =>
         const res = await response.json();
         throw new Error(res.error || "Error with request to remove member");
       } else {
-        mutate(`/api/v1/teams/name/${team.name}`, false);
+        const newMembers = team.members.filter(item => member._id != item);
+        const newTeam: DBTeam = JSON.parse(JSON.stringify(team));
+        newTeam.members = newMembers;
+        await mutate(`/api/v1/teams/name/${decodeURIComponent(team.name).toLowerCase()}`, newTeam);
       }
       const data = await response.json();
       return data;

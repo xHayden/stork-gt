@@ -154,11 +154,11 @@ export const Notifications: React.FC = () => {
         }
     }, [data, loading, error])
 
-    return <div hidden={user.status != "authenticated"} className="rounded m-2 w-max flex flex-col transition-all">
+    return user.status == "authenticated" ? <div className="rounded m-2 w-max flex flex-col transition-all">
         { (opened && validData.length != 0) ? <NotificationsTray notifications={validData} revalidate={revalidate}/> : <></> }
         <div className="rounded-xl bg-white shadow-xl ring-1 ring-black border-black p-2 relative w-max group hover:scale-105 transition-all">
             <MdNotifications size={30} color="black" onClick={() => setOpened(!opened)} />
             <div className="bg-red-500 p-[6px] border-black border-2 rounded-full w-max h-max absolute top-[4px] right-[4px]" hidden={validData.length == 0}></div>
         </div>
-    </div>
+    </div> : <></>
 }
