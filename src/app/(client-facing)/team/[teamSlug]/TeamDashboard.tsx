@@ -20,6 +20,8 @@ interface TeamDashboardProps {
 }
 
 const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
+    const [user, setUser] = useState<DBUser | undefined>();
+    const [stork, setStork] = useState<DBStork | undefined>();
     const [userSearch, setUserSearch] = useState('');
     const [userSearchData, setUserSearchData] = useState<DBUser[]>([]);
     const [userSearchError, setUserSearchError] = useState(false);
@@ -81,6 +83,8 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
             <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
                     <SearchCombobox 
+                        setItem={setUser}
+                        item={user}
                         itemSearch={userSearch}
                         itemSearchData={userSearchData} 
                         setItemSearchData={setUserSearchData} 
@@ -94,10 +98,32 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                 </div>
                 <div className='gap-2 flex w-max'>
                     <button className='w-max highlight-button' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
-                        toast.success(`Sent invite to ${userSearch} to join ${teamData.name}`)
+                        if (!user) {
+                            console.log("Member not set");
+                            return;
+                        }
+                        toast.promise(
+                            createNotificationToAddMemberToTeam(userSearchData.find((data) => data._id == user._id), teamData),
+                            {
+                                loading: 'Adding...',
+                                success: `Added ${userSearch} to ${teamData.name}`,
+                                error: 'Failed to request to add member to team',
+                            }
+                        );
                     }}>Add</button>
                     <button className='w-max highlight-button' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
-                        toast.success(`Removed ${userSearch} from team`)
+                        if (!user) {
+                            console.log("Member not set");
+                            return;
+                        }
+                        toast.promise(
+                            removeMemberFromTeam(userSearchData.find((data) => data._id == user._id), teamData),
+                            {
+                                loading: 'Removing...',
+                                success: `Removed ${storkSearch} from ${teamData.name}`,
+                                error: 'Failed to remove member from team',
+                            }
+                        );
                     }}>Remove</button>
                 </div>
             </div>
@@ -112,6 +138,8 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
             <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
                     <SearchCombobox 
+                        setItem={setStork}
+                        item={stork}
                         itemSearch={storkSearch}
                         itemSearchData={storkSearchData} 
                         setItemSearchData={setStorkSearchData} 
@@ -125,8 +153,12 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                 </div>
                 <div className='gap-2 flex w-max'>
                     <button className='highlight-button w-max' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
+                        if (!stork) {
+                            console.log("Stork not set");
+                            return;
+                        }
                         toast.promise(
-                            addStorkToTeam(storkSearchData.find((data) => data.name == storkSearch), teamData, prevMembersRef, prevStorksRef),
+                            addStorkToTeam(storkSearchData.find((data) => data._id == stork._id), teamData),
                             {
                                 loading: 'Adding...',
                                 success: `Added ${storkSearch} to ${teamData.name}`,
@@ -135,8 +167,12 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                         );
                     }}>Add</button>
                     <button className='highlight-button w-max' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
+                        if (!stork) {
+                            console.log("Stork not set");
+                            return;
+                        }
                         toast.promise(
-                            removeStorkFromTeam(storkSearchData.find((data) => data.name == storkSearch), teamData),
+                            removeStorkFromTeam(storkSearchData.find((data) => data._id == stork._id), teamData),
                             {
                                 loading: 'Removing...',
                                 success: `Removed ${storkSearch} from ${teamData.name}`,
@@ -151,6 +187,8 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
 }
 
 interface SearchComboboxProps {
+    item: DBUser | DBStork | undefined;
+    setItem: React.Dispatch<React.SetStateAction<DBUser | undefined>> | React.Dispatch<React.SetStateAction<DBStork | undefined>>;
     itemSearch: string;
     itemSearchData: DBUser[] | DBStork[];
     itemSearchError: boolean;
@@ -172,6 +210,7 @@ function SearchCombobox({
     nameRoute,
     allRoute,
     label,
+    setItem,
 }: SearchComboboxProps) {
     const itemCombobox = useCombobox({
         onDropdownOpen: () => itemCombobox.resetSelectedOption(),
@@ -190,7 +229,8 @@ function SearchCombobox({
     return <Combobox
         store={itemCombobox}
         onOptionSubmit={(val) => {
-            setItemSearch(val);
+            setItem(JSON.parse(val));
+            setItemSearch(JSON.parse(val).name);
             itemCombobox.closeDropdown();
         }}
     >
@@ -209,6 +249,12 @@ function SearchCombobox({
                     const itemData = await items.json();
                     setItemSearchData(itemData.error ? [] : itemData);
                     setItemSearchError(itemData.error != undefined);
+                    if (!itemData.error && itemData.length > 0) {
+                        const item = itemData.find((item: (DBStork | DBUser)) => item.name == event.currentTarget.value);
+                        if (item && item != -1 && item._id) {
+                            setItem(item);
+                        } 
+                    }
                     itemCombobox.openDropdown();
                     itemCombobox.updateSelectedOptionIndex();
                 }}
@@ -221,7 +267,7 @@ function SearchCombobox({
             <Combobox.Options className={`flex flex-col ${roboto.className} max-h-48 overflow-y-auto`}>
                 {itemSearchData.length === 0 ? <Combobox.Empty>Nothing found</Combobox.Empty> : 
                 itemSearchData.map((item: DBStork | DBUser) => <Combobox.Option 
-                    value={item.name} 
+                    value={JSON.stringify(item)} 
                     key={item._id.toString() as Key}
                     className='hover:bg-red-200'
                 >
@@ -237,7 +283,7 @@ function hasEmail(item: DBStork | DBUser): item is DBUser {
     return (item as DBUser).email !== undefined;
 }
 
-const addStorkToTeam = async (stork: DBStork | undefined, team: DBTeam, prevMembersRef: any, prevStorksRef: any) => {
+const addStorkToTeam = async (stork: DBStork | undefined, team: DBTeam) => {
     if (!stork || !stork._id) {
         throw new ObjectNotFoundError(`/api/v1/teams/id/${team._id}/storks/add`, DBStork);
     }
@@ -255,6 +301,40 @@ const addStorkToTeam = async (stork: DBStork | undefined, team: DBTeam, prevMemb
         throw new Error(res.error || "Error with request to add stork");
       } else {
         mutate(`/api/v1/teams/name/${team.name}`);     
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+        console.log(error)
+      throw error;
+    }
+};
+
+const createNotificationToAddMemberToTeam = async (member: DBUser | undefined, team: DBTeam) => {
+    if (!member || !member._id) {
+        throw new ObjectNotFoundError(`/api/v1/notifications/create`, DBStork);
+    }
+    try {
+      const response = await fetch(`/api/v1/notifications/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify(
+            {
+                title: "Invitation from " + team.name,
+                message: "Join our team!",
+                user: member._id,
+                type: "info",
+                confirmAction: JSON.stringify({ type: 'ACCEPT_INVITE', args: { teamId: team._id } }),
+                rejectAction: JSON.stringify({ type: 'REJECT_INVITE', args: { teamId: team._id } }),
+            }
+        ),
+      });
+  
+      if (!response.ok) {
+        const res = await response.json();
+        throw new Error(res.error || "Error with request to send request to add member");
       }
       const data = await response.json();
       return data;
@@ -291,5 +371,32 @@ const removeStorkFromTeam = async (stork: DBStork | undefined, team: DBTeam) => 
     }
 };
 
+
+const removeMemberFromTeam = async (member: DBUser | undefined, team: DBTeam) => {
+    if (!member || !member._id) {
+        throw new ObjectNotFoundError(`/api/v1/teams/id/${team._id}/members/remove`, DBStork);
+    }
+    try {
+      const response = await fetch(`/api/v1/teams/id/${team._id}/members/remove`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify({"id": member._id}),
+      });
+  
+      if (!response.ok) {
+        const res = await response.json();
+        throw new Error(res.error || "Error with request to remove member");
+      } else {
+        mutate(`/api/v1/teams/name/${team.name}`, false);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+        console.log(error)
+      throw error;
+    }
+};
 
 export default TeamDashboard;

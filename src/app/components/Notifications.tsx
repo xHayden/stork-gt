@@ -7,6 +7,7 @@ import { MdNotifications, MdOutlineNotifications } from "react-icons/md";
 import { DBNotification, Notification, NotificationAction } from "../types";
 import { BiCheck, BiX } from "react-icons/bi";
 import { toast } from "react-hot-toast";
+import { Session } from "next-auth";
 
 interface NotificationsTrayProps {
     notifications: (Notification & { _id: string })[];
@@ -21,29 +22,30 @@ interface NotificationItemProps {
 const NotificationItem: React.FC<NotificationItemProps> = ({ n, revalidate }) => {
     const [loadingConfirm, setLoadingConfirm] = useState(false);
     const [loadingReject, setLoadingReject] = useState(false);
+    const { data: session } = useSession();
 
     return <div className="min-w-[16em] flex justify-between">
         <div>
             <p className="font-semibold">{n.title}</p>
-            <p className="opacity-50">{n.type}</p>
+            <p className="opacity-50">{n.message}</p>
         </div>
         <div className="flex flex-col">
             <p className="opacity-50 self-end">{msToString(n.timestamp)}</p>
             <div className="flex self-end">
                 { n.confirmAction ? <span className={`hover:cursor-pointer ${loadingConfirm ? "animate-spin" : ""}`} onClick={() => {
                     setLoadingConfirm(true);
-                    handleNotificationAction(n.confirmAction, n._id, revalidate)
+                    handleNotificationAction(n.confirmAction, n._id, revalidate, session)
                 }}><BiCheck size={25} color="green"/></span> : <></> }
                 { n.rejectAction ? <span className={`hover:cursor-pointer ${loadingReject ? "animate-spin" : ""}`} onClick={() => {
                     setLoadingReject(true);
-                    handleNotificationAction(n.rejectAction, n._id, revalidate)}
+                    handleNotificationAction(n.rejectAction, n._id, revalidate, session)}
                 }><BiX size={25} color="red"/></span> : <></> }
             </div>
         </div>
     </div>
 }
 
-const toastPromiseHandle = async (route: string, revalidate: () => Promise<(Notification & { _id: string })[]>, args?: any) => {
+const toastPromiseHandle = async (route: string, revalidate: () => Promise<(Notification & { _id: string })[]>, callback?: () => void, args?: any) => {
     const toastPromise = new Promise(async (resolve, reject) => {
         const res = await fetch(route);
         const data = await res.json();
@@ -58,17 +60,42 @@ const toastPromiseHandle = async (route: string, revalidate: () => Promise<(Noti
     await toastPromise;
 }
 
-const handleNotificationAction = (action: NotificationAction | null, notificationId: string, revalidate: () => Promise<(Notification & { _id: string })[]>) => {
+const handleNotificationAction = (action: NotificationAction | null, notificationId: string, revalidate: () => Promise<(Notification & { _id: string })[]>, session: Session | undefined | null) => {
     if (!action) {
         return;
     }
     switch (action.type) {
         case "ACCEPT_INVITE": {
-            toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + notificationId, revalidate), 
+            if (!session) {
+                console.log("Invalid session");
+                return;
+            }
+            toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + notificationId, revalidate, async () => {
+                // accept invite, lol security is lame
+                const response = await fetch(`/api/v1/teams/${action.args.teamId}/members/add`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: JSON.stringify(
+                        {
+                            "id": session.user._id
+                        }
+                    ),
+                  });
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+            }), 
             { loading: "Accepting invite...", success: "Accepted invite from " + action.args.teamId, error: "Could not accept invite" });
             break;
         }
         case "REJECT_INVITE": {
+            if (!session) {
+                console.log("Invalid session");
+                return;
+            }
             toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + notificationId, revalidate), 
             { loading: "Rejecting invite...", success: "Rejected invite from " + action.args.teamId, error: "Could not reject invite" });
             break;
