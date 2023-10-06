@@ -79,7 +79,6 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
                 body: JSON.stringify(formData),
             }
         }
-        console.log(newRequestURL)
         let request = fetch(newRequestURL, options);
         const response = await request;
         const data = await response.text();

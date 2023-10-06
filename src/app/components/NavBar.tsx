@@ -18,10 +18,6 @@ interface NavBarProps {
 export default function NavBar(props: NavBarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { data: session, status } = useSession();
-
-    useEffect(() => {
-        console.log(session)
-    }, [session])
     
     return (
         <nav className={`absolute md:relative flex md:w-full flex-col md:flex-row justify-between p-2 md:p-4 m-2 border-b-8 font-bold text-sm md:text-xl ${rubik.className}`}>

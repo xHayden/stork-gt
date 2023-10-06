@@ -34,19 +34,25 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     const prevTeamRef = useRef<DBTeam | undefined>();
 
     const fetcher = async (urls: string | string[]) => {
+        const isClient = typeof window !== 'undefined';
+        const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+        const VERCEL_BASE_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : BASE_URL;
+    
+        const getFullUrl = (url: string) => isClient ? url : `${VERCEL_BASE_URL}${url}`;
+    
         if (Array.isArray(urls)) {
-            const responses = await Promise.all(urls.map(url => fetch(url)));
-            const data = await Promise.all(responses.map(res => res.json()));
-            return data;
+            const responses = await Promise.all(urls.map(url => fetch(getFullUrl(url))));
+            return Promise.all(responses.map(res => res.json()));
         } else {
-            const response = await fetch(urls);
+            const response = await fetch(getFullUrl(urls));
             const data = await response.json();
             if (data.error) {
                 throw new Error(data.error);
             }
             return data;
         }
-    };          
+    };
+            
 
     const { data: team, error: teamError } = useSWR<DBTeam>(`/api/v1/teams/name/${params.teamSlug}`, fetcher);
     const { data: members, error: membersError } = useSWR<DBUser[]>(() => team?.members.map((member: ObjectId) => `/api/v1/users/id/${member.toString()}`), fetcher);
@@ -218,6 +224,11 @@ function SearchCombobox({
         onDropdownOpen: () => itemCombobox.resetSelectedOption(),
         onDropdownClose: () => itemCombobox.updateSelectedOptionIndex('active')
     });
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     useEffect(() => {
         fetch(`${allRoute}`).then((items) => {
@@ -228,7 +239,7 @@ function SearchCombobox({
         })
     }, [allRoute, setItemSearchData, setItemSearch, setItemSearchError])
 
-    return (true) ? <Combobox
+    return isClient ? <Combobox
         store={itemCombobox}
         onOptionSubmit={(val) => {
             setItem(JSON.parse(val));

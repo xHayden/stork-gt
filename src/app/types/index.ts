@@ -228,8 +228,6 @@ export function isValidAction(action: string): boolean {
     try {
         const notificationAction: NotificationAction = JSON.parse(action);
         const validator = actionValidationSchemas[notificationAction.type];
-        console.log(action)
-        console.log(validator)
         return validator ? validator(notificationAction.args) : false;
     } catch (e) {
         return false;
