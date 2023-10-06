@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Db, Collection, ObjectId } from 'mongodb';
 import { FailedToUpdateError, MissingRequestBodyError, MissingRequestParametersError, ObjectNotFoundError } from '@/app/types/errors';
 
-const addTeamMemberById = async (route: string, teamId: string, userId: string): Promise<DBTeam> => {
+const addStorkToTeamById = async (route: string, teamId: string, storkId: string): Promise<DBTeam> => {
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');
     const collection: Collection<DBTeam> = db.collection('teams');
@@ -14,12 +14,12 @@ const addTeamMemberById = async (route: string, teamId: string, userId: string):
         throw new ObjectNotFoundError(route, DBTeam);
     }
     try {
-        const existingMember = doc.members.find((memberId: ObjectId) => memberId.equals(new ObjectId(userId)));
-        if (existingMember) {
+        const existingStork = doc.storks?.find((id: ObjectId) => id.equals(storkId));
+        if (existingStork) {
             return doc;
         }
-        const updatedMembers: ObjectId[] = [...doc.members, new ObjectId(userId)];
-        await collection.updateOne(filter, { $set: { members: updatedMembers } }); 
+        const updatedStorks: ObjectId[] = [...(doc.storks || []), new ObjectId(storkId)];
+        await collection.updateOne(filter, { $set: { storks: updatedStorks } }); 
         return doc; 
     } catch (e) {
         throw new FailedToUpdateError(route, DBTeam);
@@ -30,7 +30,7 @@ export async function POST(
     req: NextRequest,
     { params }: { params: { teamId: string } }
 ) {
-    const route = `/api/v1/teams/id/${params.teamId}/members/add`;
+    const route = `/api/v1/teams/id/${params.teamId}/storks/add`;
     if (!req.body) {
         throw new MissingRequestBodyError(route);
     }
@@ -40,7 +40,7 @@ export async function POST(
     }
     let res;
     try {
-        res = await addTeamMemberById(route, params.teamId, data.id);
+        res = await addStorkToTeamById(route, params.teamId, data.id);
     } catch (e) {
         return NextResponse.json({ error: (e as Error).message }, { status: 400 });
     }

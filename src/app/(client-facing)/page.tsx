@@ -31,7 +31,7 @@ export default function Home() {
           </p>
           <div className='flex justify-center text-lg w-full'>
             <a href='https://discord.gg/MxgNmdTKak' target='_blank' className='w-full'>
-              <button className='md:text-2xl lg:text-4xl w-full text-orange-100 bg-red-500 border-red-700 py-4'>
+              <button className='md:text-2xl lg:text-4xl w-full text-orange-100 bg-red-500 border-red-700 py-4 px-6 border-b-4 hover:scale-[101%] transition-all'>
                 Join Fantasy Stork League
               </button>
             </a>

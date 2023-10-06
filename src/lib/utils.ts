@@ -143,7 +143,7 @@ export const getNotificationsByUserId = async (route: string, id: string) => {
     const filter = { user: new ObjectId(id) };
     const docs: DBNotification[] = await collection.find(filter).toArray();
     if (!docs.length) {
-        throw new ObjectNotFoundError(route, DBNotification);
+        return [];
     }
     return docs;
 }

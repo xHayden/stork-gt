@@ -225,7 +225,6 @@ export const actionValidationSchemas: Record<string, (args: any) => boolean> = {
 };
 
 export function isValidAction(action: string): boolean {
-    console.log(action)
     try {
         const notificationAction: NotificationAction = JSON.parse(action);
         const validator = actionValidationSchemas[notificationAction.type];

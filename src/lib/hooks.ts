@@ -1,48 +1,70 @@
 import { SessionContextValue } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { Notification } from "@/app/types";
+import useSWR, { mutate } from "swr";
 
 interface NotificationHookData {
   data: any;
   loading: boolean;
   error: Error | undefined;
+  revalidate: () => Promise<(Notification & { _id: string })[]>
 }
 
-function useFetchNotifications(
+export function useFetchNotifications(
   session: SessionContextValue
 ): NotificationHookData {
-  const [data, setData] = useState<any>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | undefined>();
-
-  useEffect(() => {
-    async function fetchNotifications() {
-      if (session.status != "authenticated") {
-        return;
+  const fetcher = async (url: string) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      let res = await response.json();
+      if (res?.error) {
+        return [];
+      } else {
+        throw new Error(`HTTP error! ${JSON.stringify(res)}`);
       }
-      try {
-        const response = await fetch(`/api/v1/notifications/user/${session.data.user._id}/`);
-        if (!response.ok) {
-            let res = await response.json();
-            if (res?.error) {
-                setData([]);
-            } else {
-                throw new Error(`HTTP error! ${JSON.stringify(res)}`);
-            }
-        } else {
-            const data = await response.json();
-            setData(data);
-        }
-      } catch (error) {
-        setError(error as Error);
-      } finally {
-        setLoading(false);
-      }
+    } else {
+      return await response.json();
     }
+  };
 
-    fetchNotifications();
-  }, [session]);
+  const shouldFetch = session.status === "authenticated";
+  const url = shouldFetch
+    ? `/api/v1/notifications/user/${session.data.user._id}/`
+    : null;
 
-  return { data, loading, error };
+  const { data, error } = useSWR(url, fetcher);
+
+  const loading = !data && !error;
+
+  const revalidate = async (): Promise<(Notification & { _id: string })[]> => {
+    if (url) {
+      const newData = await mutate<(Notification & { _id: string })[]>(url);
+      if (!newData) {
+        throw new Error("Problem with revalidation? Mutate returned undefined.");
+      }
+      return newData;
+    }
+    return [];
+  };
+
+  return { data, loading, error, revalidate };
 }
 
-export default useFetchNotifications;
+import { useEffect } from "react";
+
+export function useOutsideClick(refs: React.RefObject<HTMLElement>[], callback: () => void) {
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            const clickedOutsideAllRefs = refs.every(ref => {
+                return ref.current && !ref.current.contains(event.target as Node);
+            });
+            
+            if (clickedOutsideAllRefs) {
+                callback();
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [refs, callback]);
+}

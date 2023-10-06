@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Db, Collection, ObjectId } from 'mongodb';
 import { FailedToUpdateError, MissingRequestBodyError, MissingRequestParametersError, ObjectNotFoundError } from '@/app/types/errors';
 
-const removeTeamMemberById = async (
+const removeStorkFromTeamById = async (
   route: string,
   teamId: string,
-  userId: string
+  storkId: string
 ): Promise<DBTeam> => {
   const dbClient = await client;
   const db: Db = dbClient.db('stork-gt');
@@ -20,12 +20,12 @@ const removeTeamMemberById = async (
   }
   
   try {
-    const memberIndex = doc.members.findIndex((memberId: ObjectId) =>
-      memberId.equals(new ObjectId(userId))
+    const storkIndex = doc.storks?.findIndex((id: ObjectId) =>
+      id.equals(new ObjectId(storkId))
     );
-    if (memberIndex !== -1) {
-      doc.members.splice(memberIndex, 1);
-      await collection.updateOne(filter, { $set: { members: doc.members } });
+    if (storkIndex !== -1) {
+      doc.storks?.splice(storkIndex, 1);
+      await collection.updateOne(filter, { $set: { storks: doc.storks } });
     }
     return doc;
   } catch (e) {
@@ -37,7 +37,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { teamId: string } }
 ) {
-  const route = `/api/v1/teams/${params.teamId}/members/remove`;
+  const route = `/api/v1/teams/${params.teamId}/storks/remove`;
   if (!req.body) {
     throw new MissingRequestBodyError(route);
   }
@@ -46,7 +46,7 @@ export async function POST(
     throw new MissingRequestParametersError(route, ["id"]);
   }
   try {
-    const res = await removeTeamMemberById(route, params.teamId, data.id);
+    const res = await removeStorkFromTeamById(route, params.teamId, data.id);
     return NextResponse.json(res);
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 })

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Db, Collection, ObjectId } from 'mongodb';
 import { ObjectNotFoundError } from '@/app/types/errors';
 
-const getStorkById = async (route: string, storkId: ObjectId): Promise<DBStork> => {
+const getStorkById = async (route: string, storkId: string): Promise<DBStork> => {
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');
     const collection: Collection<DBStork> = db.collection('storks');
@@ -18,7 +18,7 @@ const getStorkById = async (route: string, storkId: ObjectId): Promise<DBStork> 
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { storkId: ObjectId } }
+    { params }: { params: { storkId: string } }
 ) {
     const route = `api/v1/storks/id/${params.storkId}`
     try {

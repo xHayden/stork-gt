@@ -10,7 +10,7 @@ body {
   @apply bg-orange-100 w-auto;
 }
 
-button {
+.highlight-button {
   @apply bg-red-400 px-6 py-2 border-b-4 border-red-600 hover:scale-[101%] transition-all text-orange-100;
 }
 

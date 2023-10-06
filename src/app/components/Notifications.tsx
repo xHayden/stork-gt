@@ -1,58 +1,75 @@
 'use client'
 
-import useFetchNotifications from "@/lib/hooks";
+import { useFetchNotifications } from "@/lib/hooks";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react"
 import { MdNotifications, MdOutlineNotifications } from "react-icons/md";
-import { Notification, NotificationAction } from "../types";
+import { DBNotification, Notification, NotificationAction } from "../types";
 import { BiCheck, BiX } from "react-icons/bi";
 import { toast } from "react-hot-toast";
 
 interface NotificationsTrayProps {
-    notifications: Notification[];
+    notifications: (Notification & { _id: string })[];
+    revalidate: () => Promise<(Notification & { _id: string })[]>;
 }
 
-const NotificationItem: React.FC<{ data: Notification }> = (n) => {
+interface NotificationItemProps {
+    n: Notification & { _id: string };
+    revalidate: () => Promise<(Notification & { _id: string })[]>;
+}
+
+const NotificationItem: React.FC<NotificationItemProps> = ({ n, revalidate }) => {
+    const [loadingConfirm, setLoadingConfirm] = useState(false);
+    const [loadingReject, setLoadingReject] = useState(false);
+
     return <div className="min-w-[16em] flex justify-between">
         <div>
-            <p className="font-semibold">{n.data.title}</p>
-            <p className="opacity-50">{n.data.type}</p>
+            <p className="font-semibold">{n.title}</p>
+            <p className="opacity-50">{n.type}</p>
         </div>
         <div className="flex flex-col">
-            <p className="opacity-50">{msToString(n.data.timestamp)}</p>
+            <p className="opacity-50 self-end">{msToString(n.timestamp)}</p>
             <div className="flex self-end">
-                { n.data.confirmAction ? <span className="hover:cursor-pointer" onClick={() => {handleNotificationAction(n.data.confirmAction)}}><BiCheck size={25} color="green"/></span> : <></> }
-                { n.data.rejectAction ? <span className="hover:cursor-pointer" onClick={() => {handleNotificationAction(n.data.rejectAction)}}><BiX size={25} color="red" /></span> : <></> }
+                { n.confirmAction ? <span className={`hover:cursor-pointer ${loadingConfirm ? "animate-spin" : ""}`} onClick={() => {
+                    setLoadingConfirm(true);
+                    handleNotificationAction(n.confirmAction, n._id, revalidate)
+                }}><BiCheck size={25} color="green"/></span> : <></> }
+                { n.rejectAction ? <span className={`hover:cursor-pointer ${loadingReject ? "animate-spin" : ""}`} onClick={() => {
+                    setLoadingReject(true);
+                    handleNotificationAction(n.rejectAction, n._id, revalidate)}
+                }><BiX size={25} color="red"/></span> : <></> }
             </div>
         </div>
     </div>
 }
 
-const toastPromiseHandle = async (route: string, args?: any) => {
+const toastPromiseHandle = async (route: string, revalidate: () => Promise<(Notification & { _id: string })[]>, args?: any) => {
     const toastPromise = new Promise(async (resolve, reject) => {
         const res = await fetch(route);
         const data = await res.json();
         if (data?.error) {
             reject(data.error);
         } else {
+            // signal revalidation of notifications list
+            await revalidate();
             resolve(data);
         }
     })
     await toastPromise;
 }
 
-const handleNotificationAction = (action: NotificationAction | null) => {
+const handleNotificationAction = (action: NotificationAction | null, notificationId: string, revalidate: () => Promise<(Notification & { _id: string })[]>) => {
     if (!action) {
         return;
     }
     switch (action.type) {
         case "ACCEPT_INVITE": {
-            toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + action.args.teamId), 
+            toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + notificationId, revalidate), 
             { loading: "Accepting invite...", success: "Accepted invite from " + action.args.teamId, error: "Could not accept invite" });
             break;
         }
         case "REJECT_INVITE": {
-            toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + action.args.teamId), 
+            toast.promise(toastPromiseHandle('/api/v1/notifications/delete/' + notificationId, revalidate), 
             { loading: "Rejecting invite...", success: "Rejected invite from " + action.args.teamId, error: "Could not reject invite" });
             break;
         }
@@ -84,12 +101,13 @@ const msToString = (time: string | number) => {
     }
 }
 
-const NotificationsTray: React.FC<NotificationsTrayProps> = ({ notifications }) => {
+const NotificationsTray: React.FC<NotificationsTrayProps> = ({ notifications, revalidate }) => {
     return <div className="bg-white rounded-xl my-2 w-max px-4 py-2 flex gap-2 flex-col ring-1 ring-black">
         <h3 className="text-xl border-b-2 border-red-300">Notifications ({notifications.length})</h3>
         { notifications.map((notification, index) => {
-            return <NotificationItem key={index} 
-                data={notification}
+            return <NotificationItem key={notification._id} 
+                n={notification}
+                revalidate={revalidate}
             />
         })}
     </div>
@@ -98,20 +116,22 @@ const NotificationsTray: React.FC<NotificationsTrayProps> = ({ notifications }) 
 export const Notifications: React.FC = () => {
     const user = useSession();
     const [opened, setOpened] = useState(false);
-    const [validData, setValidData] = useState<Notification[]>();
-    const { data, loading, error } = useFetchNotifications(user);
+    const [validData, setValidData] = useState<(Notification & { _id: string })[]>([]);
+    const { data, loading, error, revalidate } = useFetchNotifications(user);
 
     useEffect(() => {
         if (data?.length > 0 && data[0].typeName == "Notification") {
             setValidData(data);
+        } else if (data?.length == 0) {
+            setValidData([]);
         }
     }, [data, loading, error])
 
     return <div hidden={user.status != "authenticated"} className="rounded m-2 w-max flex flex-col transition-all">
-        { (opened && validData) ? <NotificationsTray notifications={validData}/> : <></> }
-        <div className="rounded-xl bg-white shadow-xl ring-1 ring-black border-black p-2 relative w-max">
+        { (opened && validData.length != 0) ? <NotificationsTray notifications={validData} revalidate={revalidate}/> : <></> }
+        <div className="rounded-xl bg-white shadow-xl ring-1 ring-black border-black p-2 relative w-max group hover:scale-105 transition-all">
             <MdNotifications size={30} color="black" onClick={() => setOpened(!opened)} />
-            <div className="bg-red-500 p-[6px] border-black border-2 rounded-full w-max h-max absolute top-[4px] right-[4px]"></div>
+            <div className="bg-red-500 p-[6px] border-black border-2 rounded-full w-max h-max absolute top-[4px] right-[4px]" hidden={validData.length == 0}></div>
         </div>
     </div>
 }

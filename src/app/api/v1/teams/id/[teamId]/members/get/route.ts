@@ -4,11 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId, Db, Collection } from 'mongodb';
 import { ObjectNotFoundError } from '@/app/types/errors';
 
-const getTeamMembersById = async (route: string, teamId: ObjectId): Promise<DBUser[]> => {
+const getTeamMembersById = async (route: string, teamId: string): Promise<DBUser[]> => {
   const dbClient = await client;
   const db: Db = dbClient.db('stork-gt');
   const collection: Collection<DBTeam> = db.collection('teams');
-  const filter = { _id: teamId };
+  const filter = { _id: new ObjectId(teamId) };
   const doc: DBTeam | null = await collection.findOne(filter);
 
   if (!doc) {
@@ -27,7 +27,7 @@ const getTeamMembersById = async (route: string, teamId: ObjectId): Promise<DBUs
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { teamId: ObjectId } }
+    { params }: { params: { teamId: string } }
 ) {
     const route = "/api/v1/teams/id/${params.teamId}/members/get";
     try {

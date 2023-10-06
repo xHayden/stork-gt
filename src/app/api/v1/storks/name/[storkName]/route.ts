@@ -1,19 +1,20 @@
 import { DBStork } from '@/app/types';
 import client from '@/lib/mongodb'
 import { NextRequest, NextResponse } from "next/server";
-import { Db, Collection, ObjectId } from 'mongodb';
+import { Db, Collection } from 'mongodb';
 import { ObjectNotFoundError } from '@/app/types/errors';
 
-const getStorkByName = async (route: string, storkName: string): Promise<DBStork> => {
+const getStorksByName = async (route: string, storkName: string): Promise<DBStork[]> => {
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');
     const collection: Collection<DBStork> = db.collection('storks');
-    const filter = { name: storkName };
-    const doc: DBStork | null = await collection.findOne(filter);
-    if (!doc) {
+    const regex = new RegExp(`^${storkName}`, 'i');
+    const filter = { name: regex };
+    const docs: DBStork[] = await collection.find(filter).toArray();
+    if (!docs.length) {
         throw new ObjectNotFoundError(route, DBStork);
     }
-    return doc;
+    return docs;
 }
 
 export async function GET(
@@ -22,7 +23,7 @@ export async function GET(
 ) {
   const route = `api/v1/storks/id/${params.storkName}`
     try {
-      const user = await getStorkByName(route, params.storkName);
+      const user = await getStorksByName(route, params.storkName);
       return NextResponse.json(user);
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 400 })
