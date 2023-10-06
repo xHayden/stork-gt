@@ -31,6 +31,18 @@ export const getTeamByName = async (route: string, name: string): Promise<DBTeam
     return doc;
 }
 
+export const getTeamById = async (route: string, id: string): Promise<DBTeam> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBTeam> = db.collection('teams');
+    const filter = { _id: new ObjectId(id) };
+    const doc: DBTeam | null = await collection.findOne(filter);
+    if (!doc) {
+        throw new ObjectNotFoundError(route, DBTeam);
+    }
+    return doc;
+}
+
 export const getTeams = async (route: string): Promise<DBTeam[]> => {
     const dbClient = await client;
     const db: Db = dbClient.db('stork-gt');

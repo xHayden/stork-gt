@@ -16,6 +16,7 @@ const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
 interface TeamDashboardProps {
     params: {
         teamSlug: string
+        team: string
     }
 }
 
@@ -62,23 +63,23 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     }, [members, storks, team]);
 
     // todo: proper error handling for errors here, prob use suspense and error toast
-    const teamData = team || prevTeamRef?.current;
+    const teamData = JSON.parse(params.team) || team || prevTeamRef?.current;
     const membersList = members || prevMembersRef?.current;
     const storksList = storks || prevStorksRef?.current;
 
-    return (teamData != undefined && storksList != undefined && membersList != undefined && !teamError && !membersError && !storksError) ? <div className='mx-2'>
-        <div className='max-w-screen-lg'>
-            <h1 className={`text-4xl ${rubik.className}`}>{teamData.name}</h1>
+    return (teamData != undefined && !teamError) ? <div className='mx-2 flex w-full justify-center'>
+        <div className='max-w-screen-lg w-full'>
+            <h1 className={`text-4xl ${rubik.className} text-white text-center bg-red-400 border-b-4 border-red-600 p-2 mb-2`}>{teamData.name}</h1>
             <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Members:</h2>
             <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
-                { membersList.map((member) => {
+                { membersList && !membersError ? membersList.map((member) => {
                     return <li key={member.name} className=''>
                         <p className='font'>{member.name}</p>
                         <p className='text-xs'>{member.email}</p>
                         <p className='text-xs'>{member.role}</p>
                         <p className='text-xs font-bold'>{new User(member).paidDues() ? "" : "Needs to pay dues."}</p>
                         </li>
-                }) }
+                }) : <></> }
             </ul>
             <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
@@ -129,11 +130,11 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
             </div>
             <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Storks:</h2>
             <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
-                { storksList.map((stork) => {
+                { (storksList && !storksError) ? storksList.map((stork) => {
                     return <li key={stork.name} className=''>
                         <p className='font'>{stork.name}</p>
                         </li>
-                }) }
+                }) : <></> }
             </ul>
             <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
@@ -211,6 +212,7 @@ function SearchCombobox({
     allRoute,
     label,
     setItem,
+    item,
 }: SearchComboboxProps) {
     const itemCombobox = useCombobox({
         onDropdownOpen: () => itemCombobox.resetSelectedOption(),
@@ -226,7 +228,7 @@ function SearchCombobox({
         })
     }, [allRoute, setItemSearchData, setItemSearch, setItemSearchError])
 
-    return <Combobox
+    return (true) ? <Combobox
         store={itemCombobox}
         onOptionSubmit={(val) => {
             setItem(JSON.parse(val));
@@ -276,7 +278,7 @@ function SearchCombobox({
                 </Combobox.Option>)}
             </Combobox.Options>
         </Combobox.Dropdown>
-    </Combobox>
+    </Combobox> : <></>
 }
 
 function hasEmail(item: DBStork | DBUser): item is DBUser {
