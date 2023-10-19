@@ -20,7 +20,7 @@ export default function NavBar(props: NavBarProps) {
     }, [session])
     
     return (
-        <nav className={`absolute md:relative flex md:w-full flex-col md:flex-row justify-between p-2 md:p-4 m-2 border-b-8 font-bold text-sm md:text-xl ${rubik.className}`}>
+        <nav className={`absolute md:relative flex md:w-full flex-col md:flex-row justify-between p-2 md:p-4 m-2 border-b-8 font-bold text-sm md:text-xl zIndex1 ${rubik.className}`}>
             <div className="visible md:hidden flex w-full justify-end">
                 <button onClick={() => setIsOpen(!isOpen)} className="border-none p-0">
                     {isOpen ? <HiOutlineX className="h-8 w-8"/> : <HiOutlineMenu className="h-8 w-8"/>}
