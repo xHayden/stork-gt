@@ -17,7 +17,14 @@ export default function Map() {
     const [lat, setLat] = useState(42.35);
     const [zoom, setZoom] = useState(9);
 
-    const [storks, setStorks] = useState<DBStork[]>([]);
+    //const [storks, setStorks] = useState<DBStork[]>([]);
+
+    let storks: any;
+
+    async function setStorks(){
+        storks = await (await fetch("/api/v1/storks/alive")).json();
+        console.log(storks);
+    }
 
     useEffect(() => {
         if (map.current) {
@@ -30,12 +37,17 @@ export default function Map() {
             center: [lng, lat],
             zoom: zoom
         });
+
+        setStorks();
+        
     });
+
+    console.log(storks);
 
     return <div className="fullscreen">
         <br></br>
         <div className="justify-center items-center flex fullscreen">
-            <div ref={mapContainer} onClick={()=>{console.log("here!!!")}}className="background"/>
+            <div ref={mapContainer} className="background"/>
         </div>
     </div>;
 }

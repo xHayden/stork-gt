@@ -49,3 +49,15 @@ nav a {
 .text-shadow-3 {
   text-shadow: -0.05em 0.05em 0px white; /* horizontal offset, vertical offset, blur radius, shadow color */
 }
+
+.background{
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.zIndex1{
+  z-index: 1;
+}
