@@ -77,8 +77,8 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
 
     return (teamData != undefined && !teamError) ? <div className='mx-2 flex w-full justify-center'>
         <div className='max-w-screen-lg w-full'>
-            <h1 className={`text-4xl ${rubik.className} text-white text-center bg-red-400 border-b-4 border-red-600 p-2 mb-2`}>{teamData.name}</h1>
-            <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Members:</h2>
+            <h1 className={`text-4xl ${rubik.className} text-white text-center bg-amber-400 border-b-4 border-amber-600 p-2 mb-2`}>{teamData.name}</h1>
+            <h2 className={`text-2xl w-max bg-amber-400 px-6 py-2 border-b-4 border-0 border-amber-600 text-orange-100 ${rubik.className}`}>Members:</h2>
             <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2 flex flex-col gap-2 divide-y-2`}>
                 { membersList && !membersError ? membersList.map((member) => {
                     return <li key={member._id.toString()} className=''>
@@ -136,7 +136,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                     }}>Remove</button>
                 </div>
             </div> : <></>}
-            <h2 className={`text-2xl w-max bg-red-400 px-6 py-2 border-b-4 border-0 border-red-600 text-orange-100 ${rubik.className}`}>Storks:</h2>
+            <h2 className={`text-2xl w-max bg-amber-400 px-6 py-2 border-b-4 border-0 border-amber-600 text-orange-100 ${rubik.className}`}>Storks:</h2>
             <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
                 { (storksList && !storksError) ? storksList.map((stork) => {
                     return <li key={stork.name} className=''>
@@ -284,7 +284,7 @@ function SearchCombobox({
                 itemSearchData.map((item: DBStork | DBUser) => <Combobox.Option 
                     value={JSON.stringify(item)} 
                     key={item._id.toString() as Key}
-                    className='hover:bg-red-200'
+                    className='hover:bg-amber-200'
                 >
                     <p className='font'>{item.name}</p>
                     { hasEmail(item) ? <p className='text-xs'>{item.email}</p> : <></> }

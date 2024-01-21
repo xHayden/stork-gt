@@ -130,7 +130,7 @@ const msToString = (time: string | number) => {
 
 const NotificationsTray: React.FC<NotificationsTrayProps> = ({ notifications, revalidate }) => {
     return <div className="bg-white rounded-xl my-2 w-max px-4 py-2 flex gap-2 flex-col ring-1 ring-black">
-        <h3 className="text-xl border-b-2 border-red-300">Notifications ({notifications.length})</h3>
+        <h3 className="text-xl border-b-2 border-amber-300">Notifications ({notifications.length})</h3>
         { notifications.map((notification, index) => {
             return <NotificationItem key={notification._id} 
                 n={notification}
@@ -158,7 +158,7 @@ export const Notifications: React.FC = () => {
         { (opened && validData.length != 0) ? <NotificationsTray notifications={validData} revalidate={revalidate}/> : <></> }
         <div className="rounded-xl bg-white shadow-xl ring-1 ring-black border-black p-2 relative w-max group hover:scale-105 transition-all">
             <MdNotifications size={30} color="black" onClick={() => setOpened(!opened)} />
-            <div className="bg-red-500 p-[6px] border-black border-2 rounded-full w-max h-max absolute top-[4px] right-[4px]" hidden={validData.length == 0}></div>
+            <div className="bg-amber-500 p-[6px] border-black border-2 rounded-full w-max h-max absolute top-[4px] right-[4px]" hidden={validData.length == 0}></div>
         </div>
     </div> : <></>
 }

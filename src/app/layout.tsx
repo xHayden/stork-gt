@@ -15,6 +15,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className=''>
+      <head>
+      <link
+        rel="icon"
+        href="/icon?<generated>"
+        type="image/<generated>"
+        sizes="<generated>"
+      />
+      </head>
       <body className={`flex-col flex min-h-screen`}>
         <MantineProvider>
           <SessionProvider session={session}>

@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { Roboto, Rubik_Mono_One } from 'next/font/google'
 import { Session } from "next-auth";
 import { useOutsideClick } from "@/lib/hooks";
+import icon from "../icon.png";
+import Image from "next/image";
 
 const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
@@ -20,15 +22,32 @@ export default function NavBar(props: NavBarProps) {
     const { data: session, status } = useSession();
     
     return (
-        <nav className={`absolute md:relative flex md:w-full flex-col md:flex-row justify-between p-2 md:p-4 m-2 border-b-8 font-bold text-sm md:text-xl ${rubik.className}`}>
-            <div className="visible md:hidden flex w-full justify-end">
+        <>
+        <nav className="flex items-center w-full py-8 px-8 gap-2">
+            <div className="flex">
+                <div className={`text-lg ${roboto.className} gap-8 flex`}>
+                    <a className="border-0 shadow-none underline hover:cursor-pointer" style={{textShadow: "none"}}>Home</a>
+                    <a className="border-0 shadow-none hover:cursor-pointer" style={{textShadow: "none"}} onClick={() => signIn()} >Sign In</a>
+                    {/* <Image
+                        src={icon}
+                        alt={"Fantasy Stork Club Logo"}
+                        height={150}
+                        width={150}
+                    /> */}
+                </div>
+            </div>
+        </nav>
+        <nav className={`visible md:hidden absolute md:relative flex md:w-full flex-col md:flex-row justify-between p-2 md:p-4 m-2 border-b-8 font-bold text-sm md:text-xl text-white bg-amber-400 border-amber-600 ${rubik.className}`}>
+            <div className="flex w-full justify-end">
                 <button onClick={() => setIsOpen(!isOpen)} className="border-none p-0">
-                    {isOpen ? <HiOutlineX className="h-8 w-8"/> : <HiOutlineMenu className="h-8 w-8"/>}
+                    {isOpen ? <HiOutlineX className="h-8 w-8 text-white"/> : <HiOutlineMenu className="h-8 w-8 text-white"/>}
                 </button>
             </div>
             <div className="flex justify-between items-center">
-                <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row`}>
-                    <Link href="/">Home</Link>
+                <div className={`${isOpen ? 'flex' : 'hidden'} md:flex gap-0 md:gap-6 flex-col md:flex-row rounded-2xl`}>
+                    <Link href="/">
+                        Home
+                    </Link>
                     {/* <Link href="/about">About</Link> */}
                     {/* <Link href="/store">Store</Link> */}
                 </div>
@@ -39,6 +58,7 @@ export default function NavBar(props: NavBarProps) {
                 { status == "authenticated" ? <ProfileNavItem session={session} /> : <a onClick={() => signIn()} className="hover:cursor-pointer">Sign in</a> }
             </div>
         </nav>
+        </>
     );
 }
 

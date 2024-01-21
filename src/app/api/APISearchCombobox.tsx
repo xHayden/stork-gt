@@ -48,7 +48,7 @@ export default function APINameCombobox(props: APINameComboboxProps) {
                         {/* <p className="text-xs">
                             {apiForm.description}
                         </p> */}
-                        <div className={`w-full border-2 rounded-xl ${apiForm.requestMethod == "GET" ? "border-lime-400": "border-red-400"}`}></div>
+                        <div className={`w-full border-2 rounded-xl ${apiForm.requestMethod == "GET" ? "border-lime-400": "border-amber-400"}`}></div>
                     </div>
                 })}
             </div>

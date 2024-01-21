@@ -137,7 +137,7 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
     return (
         <section className='bg-neutral-800 border-b-4 border-neutral-800 rounded-xl p-4'>
             <div className='flex pb-2'>
-                <span className={`border-2 ${requestMethod == "GET" ? "border-lime-400": "border-red-400"} rounded-full`}></span>
+                <span className={`border-2 ${requestMethod == "GET" ? "border-lime-400": "border-amber-400"} rounded-full`}></span>
                 <p className='px-2 py-1 rounded-lg text-xl break-all'>{requestUrl}</p>
             </div>
             { description ? <p className='text-sm'>{description}</p> : <></> }
