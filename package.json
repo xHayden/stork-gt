@@ -37,7 +37,8 @@
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.10.1",
     "tailwindcss": "3.3.3",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "which-country": "^1.0.0"
   },
   "devDependencies": {
     "fetch-to-curl": "^0.6.0",
