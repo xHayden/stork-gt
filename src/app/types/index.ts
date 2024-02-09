@@ -39,25 +39,6 @@ export class User extends DatabaseObject implements IUser {
     paidDues(): boolean {
         return (this.dues <= 0);
     }
-    async generateSlug(name?: string): Promise<string> {
-        if (!name) name = this.name;
-        name = name.replace(/[^a-zA-Z0-9 ]/g, "").toLowerCase();
-        let slug = name.replace(/\s+/g, "");
-        let counter = 1;
-        let originalSlug = slug;
-        let slugAvailable = false;
-    
-        while (!slugAvailable) {
-            try {
-                await getUserBySlug('User.generateSlug()', slug);
-                slug = `${originalSlug}-${counter}`;
-                counter++;
-            } catch (error) {
-                slugAvailable = true
-            }
-        }
-        return slug;
-    }
 }
 
 export interface IDBUser extends IUser, IDatabaseObject {

@@ -3,7 +3,7 @@ import { DBNotification, Notification } from "@/app/types";
 import useSWR, { mutate } from "swr";
 
 export interface NotificationHookData {
-  data?: DBNotification[];
+  data?: (Notification & { _id: string })[];
   loading: boolean;
   error: Error | undefined;
   revalidate: () => Promise<(Notification & { _id: string })[]>

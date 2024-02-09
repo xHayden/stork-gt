@@ -136,6 +136,26 @@ if (!process.env.DEFAULT_DUES){
 }
 const dues: number = Number(process.env.DEFAULT_DUES);
 
+export const generateSlug = async (user: User, name?: string): Promise<string> => {
+    if (!name) name = user.name;
+    name = name.replace(/[^a-zA-Z0-9 ]/g, "").toLowerCase();
+    let slug = name.replace(/\s+/g, "");
+    let counter = 1;
+    let originalSlug = slug;
+    let slugAvailable = false;
+
+    while (!slugAvailable) {
+        try {
+            await getUserBySlug('User.generateSlug()', slug);
+            slug = `${originalSlug}-${counter}`;
+            counter++;
+        } catch (error) {
+            slugAvailable = true
+        }
+    }
+    return slug;
+}
+
 export const createUser = async (route: string, name: string, email: string) => {
     const dbClient = await client;
     const db = dbClient.db('stork-gt');
@@ -149,7 +169,7 @@ export const createUser = async (route: string, name: string, email: string) => 
         admin: false,
         slug: name,
     });
-    user.slug = await user.generateSlug();
+    user.slug = await generateSlug(user, name);
     const update = {
         $setOnInsert: user
     };

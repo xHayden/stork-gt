@@ -45,7 +45,7 @@ const ProfileDropdown = forwardRef<HTMLDivElement, ProfileDropdownProps>(({sessi
         <hr></hr>
         <Link style={{textShadow: "none"}} className="text-base" href="/profile">Profile</Link>
         <Link style={{textShadow: "none"}} className="text-base" href="/">My Teams</Link>
-        <Link style={{textShadow: "none"}} className="text-base" href="/notifications">Notifications { !loading ? `(${(notificationsData as DBNotification[]).length})`: <></> }</Link>
+        <Link style={{textShadow: "none"}} className="text-base" href="/notifications">Notifications { !loading ? `(${notificationsData?.length})`: <></> }</Link>
         {/* <Link style={{textShadow: "none"}} className="text-base" href="/profile/orders">Order History</Link> */}
         <hr></hr>
         <p className="hover:cursor-pointer text-base" onClick={() => signOut()}>Logout</p>

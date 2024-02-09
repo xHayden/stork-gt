@@ -147,7 +147,7 @@ export const Notifications: React.FC = () => {
     const { data, loading, error, revalidate } = useFetchNotifications(user);
 
     useEffect(() => {
-        if (data?.length > 0 && data[0].typeName == "Notification") {
+        if (data && data?.length > 0 && data[0].typeName == "Notification") {
             setValidData(data);
         } else if (data?.length == 0) {
             setValidData([]);
