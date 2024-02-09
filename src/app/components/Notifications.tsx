@@ -1,9 +1,9 @@
 'use client'
 
-import { useFetchNotifications } from "@/lib/hooks";
+import { NotificationHookData, useFetchNotifications } from "@/lib/hooks";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react"
-import { MdNotifications, MdOutlineNotifications } from "react-icons/md";
+import { HiOutlineBell } from "react-icons/hi2";
 import { DBNotification, Notification, NotificationAction } from "../types";
 import { BiCheck, BiX } from "react-icons/bi";
 import { toast } from "react-hot-toast";
@@ -154,11 +154,24 @@ export const Notifications: React.FC = () => {
         }
     }, [data, loading, error])
 
-    return user.status == "authenticated" ? <div className="rounded m-2 w-max flex flex-col transition-all">
+    return user.status == "authenticated" ? <div className="rounded w-max flex flex-col transition-all">
         { (opened && validData.length != 0) ? <NotificationsTray notifications={validData} revalidate={revalidate}/> : <></> }
-        <div className="rounded-xl bg-white shadow-xl ring-1 ring-black border-black p-2 relative w-max group hover:scale-105 transition-all">
-            <MdNotifications size={30} color="black" onClick={() => setOpened(!opened)} />
+        <div className="rounded-xl bg-white relative w-max group hover:scale-105 transition-all">
+            <HiOutlineBell size={30} color="black" onClick={() => setOpened(!opened)} />
             <div className="bg-amber-500 p-[6px] border-black border-2 rounded-full w-max h-max absolute top-[4px] right-[4px]" hidden={validData.length == 0}></div>
         </div>
     </div> : <></>
+}
+
+export const NotificationsPageList = ({ notifications }: { notifications: DBNotification[] }) => {
+    const session = useSession();
+    const { data, loading, error, revalidate }: NotificationHookData = useFetchNotifications(session);
+    const finalNotifications = !loading && !error && data ? data : notifications;
+
+    return <div>
+        {finalNotifications.map(notification => (
+            <div key={notification._id.toString()}>{notification.message}</div>
+        ))}
+    </div>
+    
 }

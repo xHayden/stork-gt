@@ -134,12 +134,32 @@ export default function Admin() {
         },
         {
           name: 'Get User By Email',
-          requestUrl: '/api/v1/users/{email}',
+          requestUrl: '/api/v1/users/email/{email}',
           requestMethod: 'GET',
           description: "Retrieves a specific user's information using their email address.",
           buttonText: 'Run Get User By Email',
           fields: [
             { name: 'email', type: 'text', placeholder: 'User Email' }
+          ]
+        },
+        {
+          name: 'Get User By Name',
+          requestUrl: '/api/v1/users/name/{name}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific user's information using their email address.",
+          buttonText: 'Run Get User By Name',
+          fields: [
+            { name: 'name', type: 'text', placeholder: 'User Name' }
+          ]
+        },
+        {
+          name: 'Get User By Id',
+          requestUrl: '/api/v1/users/id/{id}',
+          requestMethod: 'GET',
+          description: "Retrieves a specific user's information using their email address.",
+          buttonText: 'Run Get User By Id',
+          fields: [
+            { name: 'id', type: 'text', placeholder: 'User Id' }
           ]
         }
     ];

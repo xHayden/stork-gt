@@ -18,6 +18,18 @@ export const deleteNotification = async (route: string, id: string) => {
     }
 }
 
+export const getUserTeamsById = async (route: string, id: string): Promise<DBTeam[]> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBTeam> = db.collection('teams');
+    const filter = { members: { $in: [new ObjectId(id)] } };
+    const cursor = collection.find(filter);
+    const docs: DBTeam[] = await cursor.toArray();
+    if (docs.length === 0) {
+        throw new ObjectNotFoundError(route, DBTeam);
+    }
+    return docs;
+}
 
 export const getTeamByName = async (route: string, name: string): Promise<DBTeam> => {
     const dbClient = await client;
@@ -67,6 +79,18 @@ export const searchUserByName = async (route: string, nameStart: string): Promis
         throw new ObjectNotFoundError(route, DBUser);
     }
     return docs;
+}
+
+export const getUserBySlug = async (route: string, slug: string): Promise<DBUser> => {
+    const dbClient = await client;
+    const db: Db = dbClient.db('stork-gt');
+    const collection: Collection<DBUser> = db.collection('users');
+    const filter = { slug: slug };
+    const doc: DBUser | null = await collection.findOne(filter);
+    if (!doc) {
+        throw new ObjectNotFoundError(route, DBUser);
+    }
+    return doc;
 }
 
 
@@ -122,8 +146,10 @@ export const createUser = async (route: string, name: string, email: string) => 
         email: email,
         dues: dues,
         role: "Member",
-        admin: false
+        admin: false,
+        slug: name,
     });
+    user.slug = await user.generateSlug();
     const update = {
         $setOnInsert: user
     };

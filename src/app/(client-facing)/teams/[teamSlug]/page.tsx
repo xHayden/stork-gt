@@ -3,6 +3,8 @@ import TeamDashboard from './TeamDashboard';
 import { getTeamByName } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
+export const revalidate = 1;
+
 export default async function Page ({ params }: any) {
     let uri = params.teamSlug;
     try {

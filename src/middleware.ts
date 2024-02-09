@@ -14,6 +14,7 @@ const adminOnlyRoutes = [
     // "/members/add",
     // "/members/remove",
     "/api/v1/users/create",
+    "/admin"
 ]
 
 export default withAuth((req) => {
@@ -21,8 +22,18 @@ export default withAuth((req) => {
     {
         callbacks: {
             authorized: ({ req, token }) => {
-                return !(authenticatedRoutes.some(route => req.url.includes(route)) && token === null) &&
-                    !(adminOnlyRoutes.some(route => req.url.includes(route)) && token?.admin != true)
+                // if (!(authenticatedRoutes.some(route => req.url.includes(route)) && token === null) && // the route is not authenticated and the token is not null
+                //     !(adminOnlyRoutes.some(route => req.url.includes(route)) && token?.admin != true)) // the request is not an admin route with the admin flag not set
+                //      {
+                //         return true;
+                // } else {
+                //     return {};
+                // }
+                if (adminOnlyRoutes.some(route => req.url.includes(route)) && token?.admin != true) {
+                    return false;
+                } else {
+                    return true;
+                }
             },
         
         }

@@ -83,10 +83,15 @@ const APIForm = ({ requestUrl, requestMethod, fields, buttonText, description }:
         const response = await request;
         const data = await response.text();
         setResponse(data);
-        if(response.ok) {
-          toast.success("Request successfully completed!");
-        } else {
-          toast.error("Request failed: " + data);
+        try {
+            const json = await JSON.parse(data);
+            if(response.ok) {
+                toast.success("Request successfully completed!");
+            } else {
+                toast.error("Request failed: " + data);
+            }
+        } catch (e) {
+            toast.error("Error in route or authorization");
         }
     }
 

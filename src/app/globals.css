@@ -11,7 +11,7 @@ body {
 }
 
 .highlight-button {
-  @apply bg-amber-400 px-6 py-2 border-b-4 border-amber-600 hover:scale-[101%] transition-all;
+  @apply bg-amber-500 font-semibold px-6 py-2 border-b-4 border-amber-700 hover:scale-[101%] transition-all text-white;
 }
 
 img {

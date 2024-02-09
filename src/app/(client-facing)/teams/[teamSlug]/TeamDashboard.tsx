@@ -1,6 +1,6 @@
 "use client"
 
-import { Key, useEffect, useRef, useState } from 'react';
+import { Key, useEffect, useMemo, useRef, useState } from 'react';
 import { redirect } from 'next/navigation';
 import { Combobox, useCombobox, TextInput } from '@mantine/core';
 import { ObjectNotFoundError } from '@/app/types/errors';
@@ -8,8 +8,10 @@ import { DBStork, DBTeam, DBUser, User } from '@/app/types';
 import { Roboto, Rubik_Mono_One } from 'next/font/google';
 import { toast } from 'react-hot-toast';
 import useSWR, { mutate } from 'swr';
-import { ObjectId } from 'mongodb';
 import { useSession } from 'next-auth/react';
+import { BiX } from 'react-icons/bi';
+import { SWRConfig } from 'swr';
+import { ObjectId } from 'mongodb';
 
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 const rubik = Rubik_Mono_One({ weight: "400", subsets: ["latin"] });
@@ -56,16 +58,21 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     };
             
 
-    const { data: team, error: teamError } = useSWR<DBTeam>(`/api/v1/teams/name/${decodeURIComponent(params.teamSlug).toLowerCase()}`, fetcher);
-    const { data: members, error: membersError } = useSWR<DBUser[]>(() => team?.members.map((member: ObjectId) => `/api/v1/users/id/${member.toString()}`), fetcher);
-    const { data: storks, error: storksError } = useSWR<DBStork[]>(() => team?.storks.map((stork: ObjectId) => `/api/v1/storks/id/${stork.toString()}`), fetcher);
+    const { data: team, error: teamError, mutate: teamMutate } = useSWR<DBTeam>(`/api/v1/teams/name/${decodeURIComponent(params.teamSlug).toLowerCase()}`, fetcher, {  });
+    const { data: members, error: membersError, mutate: membersMutate } = useSWR<DBUser[]>(() => team?.members.map((member: ObjectId) => `/api/v1/users/id/${member.toString()}`), fetcher, {  });
+    const { data: storks, error: storksError, mutate: storksMutate } = useSWR<DBStork[]>(() => team?.storks.map((stork: ObjectId) => `/api/v1/storks/id/${stork.toString()}`), fetcher, {  });
     // Handle errors
+    // TODO: Create a getFullTeamData route to make this all take one call and one useSWR route
     if (teamError) redirect("/404");
 
     useEffect(() => {
-        if (members && storks && team) {
+        if (members) {
             prevMembersRef.current = members
+        }
+        if (storks) {
             prevStorksRef.current = storks;
+        }
+        if (team) {
             prevTeamRef.current = team;
         }
     }, [members, storks, team]);
@@ -74,11 +81,20 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
     const teamData = JSON.parse(params.team) || team || prevTeamRef?.current;
     const membersList = members || prevMembersRef?.current;
     const storksList = storks || prevStorksRef?.current;
+    const [fallback, setFallback] = useState<Record<string, any>>({});
 
-    return (teamData != undefined && !teamError) ? <div className='mx-2 flex w-full justify-center'>
-        <div className='max-w-screen-lg w-full'>
+    useEffect(() => {
+        const newFallback = JSON.parse(JSON.stringify(fallback));
+        if (params.team) {
+            newFallback[`/api/v1/teams/name/${decodeURIComponent(params.teamSlug).toLowerCase()}`] = JSON.parse(params.team);
+        }
+        setFallback(newFallback);
+    }, [params])
+
+    return (teamData != undefined && !teamError) ? <SWRConfig value={{ fallback }}><div className='flex w-full justify-center'>
+        <div className='w-full md:max-w-[70em] 2xl:max-w-[100em]'>
             <h1 className={`text-4xl ${rubik.className} text-white text-center bg-amber-400 border-b-4 border-amber-600 p-2 mb-2`}>{teamData.name}</h1>
-            <h2 className={`text-2xl w-max bg-amber-400 px-6 py-2 border-b-4 border-0 border-amber-600 text-orange-100 ${rubik.className}`}>Members:</h2>
+            <h2 className={`text-2xl w-max bg-amber-400 px-6 py-2 border-b-4 border-0 border-amber-600 text-white ${rubik.className}`}>Members:</h2>
             <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2 flex flex-col gap-2 divide-y-2`}>
                 { membersList && !membersError ? membersList.map((member) => {
                     return <li key={member._id.toString()} className=''>
@@ -106,44 +122,20 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                     />
                 </div>
                 <div className='gap-2 flex w-max mb-2'>
-                    <button className='w-max highlight-button' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
-                        if (!user) {
-                            console.log("Member not set");
-                            return;
-                        }
-                        toast.promise(
-                            createNotificationToAddMemberToTeam(userSearchData.find((data) => data._id == user._id), teamData),
-                            {
-                                loading: 'Requesting to add...',
-                                success: `Request sent to add ${userSearch} to ${teamData.name}`,
-                                error: 'Failed to request to add member to team',
-                            }
-                        );
-                    }}>Add</button>
-                    <button className='w-max highlight-button' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
-                        if (!user) {
-                            console.log("Member not set");
-                            return;
-                        }
-                        toast.promise(
-                            removeMemberFromTeam(userSearchData.find((data) => data._id == user._id), teamData),
-                            {
-                                loading: 'Removing...',
-                                success: `Removed ${storkSearch} from ${teamData.name}`,
-                                error: 'Failed to remove member from team',
-                            }
-                        );
-                    }}>Remove</button>
+                    <button className='w-max highlight-button' onClick={handleAddUserWithState()}>Add</button>
+                    <button className='w-max highlight-button' onClick={handleRemoveUserWithState()}>Remove</button>
                 </div>
             </div> : <></>}
-            <h2 className={`text-2xl w-max bg-amber-400 px-6 py-2 border-b-4 border-0 border-amber-600 text-orange-100 ${rubik.className}`}>Storks:</h2>
-            <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
-                { (storksList && !storksError) ? storksList.map((stork) => {
-                    return <li key={stork.name} className=''>
-                        <p className='font'>{stork.name}</p>
+            <h2 className={`text-2xl w-max bg-amber-400 px-6 py-2 border-b-4 border-0 border-amber-600 text-white ${rubik.className}`}>Storks:</h2>
+            { (team?.storks?.length && !storksError) ? <ul className={`${roboto.className} border-2 w-full bg-white rounded-xl p-2 my-2`}>
+                {  team.storks.map((id) => {
+                    const stork = storksList?.find((s) => s._id == id);
+                    return <li key={stork?.name} className='flex justify-between items-center'>
+                        <p className='font'>{stork?.name}</p>
+                        <button className='hover:scale-125 transition-all' onClick={stork ? handleRemoveStork(stork) : () => {}}><BiX size="24" color="red"/></button>
                         </li>
-                }) : <></> }
-            </ul>
+                }) }
+            </ul> : <></> }
             {session.status == "authenticated" && (JSON.parse(params.team) as DBTeam).members.includes(session.data.user._id) ? <div className={`${roboto.className} flex gap-2 w-full items-center`}>
                 <div className='w-full'>
                     <SearchCombobox 
@@ -161,38 +153,97 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ params }) => {
                     />
                 </div>
                 <div className='gap-2 flex w-max'>
-                    <button className='highlight-button w-max' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
-                        if (!stork) {
-                            console.log("Stork not set");
-                            return;
-                        }
-                        toast.promise(
-                            addStorkToTeam(storkSearchData.find((data) => data._id == stork._id), teamData),
-                            {
-                                loading: 'Adding...',
-                                success: `Added ${storkSearch} to ${teamData.name}`,
-                                error: 'Failed to add stork to team',
-                            }
-                        );
-                    }}>Add</button>
-                    <button className='highlight-button w-max' onClick={(event: React.FormEvent<HTMLButtonElement>) => {
-                        if (!stork) {
-                            console.log("Stork not set");
-                            return;
-                        }
-                        toast.promise(
-                            removeStorkFromTeam(storkSearchData.find((data) => data._id == stork._id), teamData),
-                            {
-                                loading: 'Removing...',
-                                success: `Removed ${storkSearch} from ${teamData.name}`,
-                                error: 'Failed to remove stork from team',
-                            }
-                        );
-                    }}>Remove</button>
+                    <button className='highlight-button w-max' onClick={handleAddStorkWithState()}>Add</button>
+                    <button className='highlight-button w-max' onClick={handleRemoveStorkWithState()}>Remove</button>
                 </div>
             </div> : <></>}
         </div>
-    </div> : <p></p>
+    </div></SWRConfig> : <></>
+
+    function handleAddUserWithState() {
+        return (event: React.FormEvent<HTMLButtonElement>) => {
+            if (!user) {
+                console.log("Member not set");
+                return;
+            }
+            toast.promise(
+                createNotificationToAddMemberToTeam(userSearchData.find((data) => data._id == user._id), teamData),
+                {
+                    loading: 'Requesting to add...',
+                    success: `Request sent to add ${userSearch} to ${teamData.name}`,
+                    error: 'Failed to request to add member to team',
+                }
+            );
+        };
+    }
+
+    function handleRemoveUserWithState() {
+        return (event: React.FormEvent<HTMLButtonElement>) => {
+            if (!user) {
+                console.log("Member not set");
+                return;
+            }
+            toast.promise(
+                removeMemberFromTeam(userSearchData.find((data) => data._id == user._id), teamData),
+                {
+                    loading: 'Removing...',
+                    success: `Removed ${storkSearch} from ${teamData.name}`,
+                    error: 'Failed to remove member from team',
+                }
+            );
+        };
+    }
+
+    function handleAddStorkWithState() {
+        return (event: React.FormEvent<HTMLButtonElement>) => {
+            if (!stork) {
+                console.log("Stork not set");
+                return;
+            }
+            toast.promise(
+                addStorkToTeam(storkSearchData.find((data) => data._id == stork._id), teamData),
+                {
+                    loading: 'Adding...',
+                    success: `Added ${storkSearch} to ${teamData.name}`,
+                    error: 'Failed to add stork to team',
+                }
+            );
+        };
+    }
+
+    function handleRemoveStorkWithState() {
+        return (event: React.FormEvent<HTMLButtonElement>) => {
+            if (!stork) {
+                console.log("Stork not set");
+                return;
+            }
+            toast.promise(
+                removeStorkFromTeam(storkSearchData.find((data) => data._id == stork._id), teamData),
+                {
+                    loading: 'Removing...',
+                    success: `Removed ${storkSearch} from ${teamData.name}`,
+                    error: 'Failed to remove stork from team',
+                }
+            );
+        };
+    }
+
+    function handleRemoveStork(stork: DBStork) {
+        return async (event: React.FormEvent<HTMLButtonElement>) => {
+            if (!stork) {
+                console.log("Stork not set");
+                return;
+            }
+            await toast.promise(
+                removeStorkFromTeam(stork, teamData),
+                {
+                    loading: 'Removing...',
+                    success: `Removed ${storkSearch} from ${teamData.name}`,
+                    error: 'Failed to remove stork from team',
+                }
+            );
+        };
+    }
 }
 
 interface SearchComboboxProps {
@@ -322,7 +373,7 @@ const addStorkToTeam = async (stork: DBStork | undefined, team: DBTeam) => {
         await mutate(`/api/v1/teams/name/${decodeURIComponent(team.name).toLowerCase()}`, newTeam); 
         newStorks.map(async (item: ObjectId) => {
             await mutate(`/api/v1/storks/id/${item}`);
-        });  
+        });
       }
       const data = await response.json();
       return data;

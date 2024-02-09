@@ -1,9 +1,9 @@
 import { SessionContextValue } from "next-auth/react";
-import { Notification } from "@/app/types";
+import { DBNotification, Notification } from "@/app/types";
 import useSWR, { mutate } from "swr";
 
-interface NotificationHookData {
-  data: any;
+export interface NotificationHookData {
+  data?: DBNotification[];
   loading: boolean;
   error: Error | undefined;
   revalidate: () => Promise<(Notification & { _id: string })[]>

@@ -1,3 +1,4 @@
+import { getUserBySlug } from "@/lib/utils";
 import { ObjectId } from "mongodb";
 
 export class DatabaseObject implements IDatabaseObject {
@@ -19,6 +20,8 @@ export interface IUser {
     role: string;
     admin: boolean;
     paidDues?(): boolean;
+    generateSlug?(name?: string): Promise<string>
+    slug: string;
 }
 
 export class User extends DatabaseObject implements IUser {
@@ -28,12 +31,32 @@ export class User extends DatabaseObject implements IUser {
     purchases?: IItem[] | [];
     role!: string;
     admin!: boolean;
+    slug!: string;
     constructor(user: IUser) {
         super("User");
         Object.assign(this, user);
     }
     paidDues(): boolean {
         return (this.dues <= 0);
+    }
+    async generateSlug(name?: string): Promise<string> {
+        if (!name) name = this.name;
+        name = name.replace(/[^a-zA-Z0-9 ]/g, "").toLowerCase();
+        let slug = name.replace(/\s+/g, "");
+        let counter = 1;
+        let originalSlug = slug;
+        let slugAvailable = false;
+    
+        while (!slugAvailable) {
+            try {
+                await getUserBySlug('User.generateSlug()', slug);
+                slug = `${originalSlug}-${counter}`;
+                counter++;
+            } catch (error) {
+                slugAvailable = true
+            }
+        }
+        return slug;
     }
 }
 

@@ -6,7 +6,7 @@ const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 
 export default function Home() {
   return (
-    <main className={`my-6 md:my-0 mx-2 3xl:my-24 flex-col flex gap-12 xl:gap-16 3xl:gap-24 ${rubik.className}`}>
+    <main className={`mt-14 md:mt-0 mx-2 3xl:my-24 flex-col flex gap-12 xl:gap-16 3xl:gap-24 ${rubik.className}`}>
       <div className='flex justify-center items-center 3xl:items-start flex-grow'>
         <div className='gap-8 flex flex-col items-center md:max-w-[70em] 2xl:max-w-[100em] w-full'> 
           <h1 className="text-5xl md:text-6xl lg:text-8xl text-amber-500 text-shadow md:self-center md:text-center">It&apos;s Storkin&apos; Time!</h1>
@@ -24,7 +24,7 @@ export default function Home() {
           <Disclaimer/>
         </div>
       </div>
-      <div className='md:max-w-[70em] 2xl:max-w-[100em] gap-4 flex flex-col justify-center mx-auto pb-8'>
+      <div className='md:max-w-[70em] 2xl:max-w-[100em] gap-4 flex flex-col justify-center mx-auto'>
         <div>
           <h2 className={`text-4xl lg:text-5xl xl:text-7xl text-amber-500 text-shadow w-max`}>What?</h2>
           <p className={`${roboto.className} font-semibold text-xl lg:text-2xl`}>

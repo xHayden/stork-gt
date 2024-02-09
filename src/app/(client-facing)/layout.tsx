@@ -3,6 +3,7 @@ import NavBar from '../components/NavBar'
 import { Notifications } from '../components/Notifications'
 import '../globals.css'
 import type { Metadata } from 'next'
+import Footer from '../components/Footer'
 
 export const metadata: Metadata = {
   title: 'Fantasy Stork League @ GT',
@@ -19,9 +20,11 @@ export default function RootLayout({
       <Toaster />
       <NavBar/>
     </div>
-    {children}
-    <div className='sticky bottom-0'>
-      <Notifications />
+    <div className='relative w-full'>
+      {children}
+      <div className='w-full flex justify-center'>
+        <Footer />
+      </div>
     </div>
   </>)
 }

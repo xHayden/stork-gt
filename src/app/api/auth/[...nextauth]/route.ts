@@ -1,7 +1,7 @@
 // import { authenticate } from "@/services/authService"
 import NextAuth, { Session } from "next-auth"
 import GithubProvider from "next-auth/providers/github"
-import { createUser, getUserByEmail } from "@/lib/utils";
+import { createUser, getUserByEmail, getUserById } from "@/lib/utils";
 import { DBUser } from "@/app/types";
 import { JWT } from "next-auth/jwt";
 
@@ -9,7 +9,7 @@ if (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET) {
   throw new Error("Set Github OAuth in .env");
 }
 
-const authOptions = {
+export const authOptions = {
   // Configure one or more authentication providers
   providers: [
     GithubProvider({
@@ -27,21 +27,22 @@ const authOptions = {
       return true;
     },
     session: async ({ session, token }: { session: Session, token: any }) => {
-      if (session?.user) {
+      if (session?.user.email) {
         const dbUser: DBUser = await getUserByEmail("auth/session/getUser", session?.user.email);
         session.user = dbUser;
       }
       return session;
     },
     jwt: async ({ token, account, profile }: {token: JWT, account: any, profile?: any}) => {
-      if (profile?.email) {
-        const dbUser: DBUser = await getUserByEmail("auth/session/getUser", profile.email);
+      if (profile?.email.email || token?.email) {
+        const dbUser: DBUser = await getUserByEmail("auth/session/getUser", profile?.email ?? token.email);
         token.admin = dbUser.admin;
         token._id = dbUser._id;
         token.dues = dbUser.dues;
         token.name = dbUser.name;
         token.purchases = dbUser.purchases;
         token.role = dbUser.role;
+        token.slug = dbUser.slug;
       }
       return token;
     }
